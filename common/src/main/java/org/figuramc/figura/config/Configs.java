@@ -263,7 +263,9 @@ public class Configs {
                         .append(FiguraText.of(tooltip + "2").withStyle(ChatFormatting.RED))
                         .append("\n\n")
                         .append(FiguraText.of(tooltip + "3").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
-            }};
+            }},
+            ALLOW_UPLOADING_ERRORED_AVATARS = new ConfigType.BoolConfig("allow_uploading_errored_avatars", DEV, false);
+
     public static final ConfigType.FolderConfig
             MAIN_DIR = new ConfigType.FolderConfig("main_dir", DEV, "") {
         @Override

@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.Level;
@@ -341,6 +342,11 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
             boolean renderPivotParts = part.parentType.isPivot && allowPivotParts;
 
             if (renderPivot || renderTasks || renderPivotParts) {
+                // fix light and overlay
+                PartCustomization parent = customizationStack.peek();
+                int light = parent.light != null ? parent.light : LightCoordsUtil.FULL_BRIGHT;
+                int overlay = parent.overlay != null ? parent.overlay : OverlayTexture.NO_OVERLAY;
+
                 // fix pivots
                 FiguraMod.pushProfiler("fixMatricesPivot");
 
@@ -360,8 +366,6 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
                 // render tasks
                 if (renderTasks) {
                     FiguraMod.popPushProfiler("renderTasks");
-                    int light = peek.light;
-                    int overlay = peek.overlay;
                     interceptRendersIntoFigura = false;
                     for (RenderTask task : part.renderTasks.values()) {
                         boolean shouldRender = task.shouldRender();

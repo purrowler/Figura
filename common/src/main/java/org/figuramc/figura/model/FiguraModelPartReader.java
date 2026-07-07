@@ -20,6 +20,7 @@ import org.figuramc.figura.math.vector.FiguraVec4;
 import org.figuramc.figura.model.rendering.Vertex;
 import org.figuramc.figura.model.rendering.texture.FiguraRenderTypes;
 import org.figuramc.figura.model.rendering.texture.FiguraTextureSet;
+import org.figuramc.figura.parsers.BlockbenchCommonTypes;
 import org.figuramc.figura.utils.MathUtils;
 
 import java.util.*;
@@ -31,6 +32,14 @@ import java.util.*;
 public class FiguraModelPartReader {
 
     public static FiguraModelPart read(Avatar owner, CompoundTag partCompound, List<FiguraTextureSet> textureSets, boolean smoothNormals) {
+        return read(owner, partCompound, textureSets, smoothNormals, null);
+    }
+
+    public static FiguraModelPart read(Avatar owner, CompoundTag partCompound, List<FiguraTextureSet> textureSets, boolean smoothNormals, Byte inheritedFormatVersion) {
+        // if not present, assume v4
+        byte formatVersion = partCompound.contains("_v") ? partCompound.getByteOr("_v", BlockbenchCommonTypes.FORMAT_V4) :
+                inheritedFormatVersion == null ? BlockbenchCommonTypes.FORMAT_V4 : inheritedFormatVersion;
+
         // Read name
         String name = partCompound.getStringOr("name", "");
 
@@ -87,10 +96,10 @@ public class FiguraModelPartReader {
         if (partCompound.contains("chld")) {
             ListTag listTag = partCompound.getListOrEmpty("chld");
             for (Tag tag : listTag)
-                children.add(read(owner, (CompoundTag) tag, textureSets, smoothNormals));
+                children.add(read(owner, (CompoundTag) tag, textureSets, smoothNormals, formatVersion));
         }
 
-        FiguraModelPart result = new FiguraModelPart(owner, name, customization, vertices, children);
+        FiguraModelPart result = new FiguraModelPart(owner, name, customization, vertices, children, formatVersion);
 
         for (FiguraModelPart child : children)
             child.parent = result;
@@ -159,7 +168,7 @@ public class FiguraModelPartReader {
                         bezierLeftTime = MathUtils.clamp(bezierLeftTime, 0, 1);
                         bezierRightTime = MathUtils.clamp(bezierRightTime, 0, 1);
 
-                        keyframes.add(new Keyframe(owner, animation, time, interpolation, pre, end, bezierLeft, bezierRight, bezierLeftTime, bezierRightTime));
+                        keyframes.add(new Keyframe(owner, result, type, animation, time, interpolation, pre, end, bezierLeft, bezierRight, bezierLeftTime, bezierRightTime));
                     }
 
                     keyframes.sort(Keyframe::compareTo);

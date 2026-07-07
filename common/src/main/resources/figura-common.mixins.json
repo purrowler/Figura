@@ -26,6 +26,7 @@
     "PlayerAccessor",
     "PlayerModelMixin",
     "PlayerModelTypeAccessor",
+    "PlayerSocialManagerMixin",
     "ReloadableResourceManagerMixin",
     "SNIHelperMixin",
     "TextDisplayMixin",

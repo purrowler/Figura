@@ -83,7 +83,6 @@ public class SliderWidget extends ScrollBarWidget {
         this.isHovered = this.isMouseOver(mouseX, mouseY);
 
         // render button
-        UIHelper.enableBlend();
         int x = getX();
         int y = getY();
         int width = getWidth();

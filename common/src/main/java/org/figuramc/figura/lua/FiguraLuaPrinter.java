@@ -148,7 +148,7 @@ public class FiguraLuaPrinter {
 
         text.append(Component.literal("\n"));
 
-        if (Configs.LOG_LOCATION.value == 0)
+        if (config != 3 && Configs.LOG_LOCATION.value == 0)
             sendLuaChatMessage(text);
         else
             FiguraMod.LOGGER.info(text.getString());
@@ -336,7 +336,7 @@ public class FiguraLuaPrinter {
             Double d = value.checkdouble();
             ret = d == Math.rint(d) ? value.tojstring() : df.format(d);
         } else {
-            ret = value.tojstring();
+            ret = safeToJString(value);
             if (value.isstring() && quoteStrings)
                 ret = "\"" + ret + "\"";
         }
@@ -350,6 +350,14 @@ public class FiguraLuaPrinter {
         }
 
         return text;
+    }
+
+    private static String safeToJString(LuaValue value) {
+        try {
+            return value.tojstring();
+        } catch (Exception e) {
+            return value instanceof LuaString str ? "<binary data, " + str.length() + " bytes>" : "<unprintable value>";
+        }
     }
 
     private static Style getTypeColor(LuaValue value) {

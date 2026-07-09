@@ -259,7 +259,7 @@ public class BlockbenchV5Model extends ModelFormat {
                 for (OutlinerItem child : children) {
                     CompoundTag childTag = child.toNBT(context);
                     if (childTag != null) {
-                        if (childTag.contains("vsb") && Objects.equals(group.visibility, childTag.getBoolean("vsb")))
+                        if (childTag.contains("vsb") && Objects.equals(group.visibility, childTag.getBooleanOr("vsb", true)))
                             childTag.remove("vsb");
                         chld.add(childTag);
                     }

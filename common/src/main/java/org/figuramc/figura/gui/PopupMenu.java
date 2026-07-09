@@ -1,6 +1,5 @@
 package org.figuramc.figura.gui;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -94,7 +93,6 @@ public class PopupMenu {
             return;
         }
 
-        GlStateManager._disableDepthTest();
         Matrix3x2fStack pose = gui.pose();
         pose.pushMatrix();
 
@@ -116,13 +114,11 @@ public class PopupMenu {
         // background
         int width = LENGTH * 18;
 
-        UIHelper.enableBlend();
         int frame = Configs.REDUCED_MOTION.value ? 0 : (int) ((FiguraMod.ticks / 5f) % 4);
         gui.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, width / -2, -24, 0, frame * 26, width, 26, width, 26, width, 104);
 
         // icons
         pose.translate(0f, 0f);
-        UIHelper.enableBlend();
         for (int i = 0; i < LENGTH; i++)
             gui.blit(RenderPipelines.GUI_TEXTURED, ICONS, width / -2 + (18 * i), -24, 18 * i, i == index ? 18 : 0, 18, 18, 18, 18, width, 36);
 

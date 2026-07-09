@@ -219,7 +219,7 @@ public class BlockbenchV4Model extends ModelFormat {
                         if (childTag != null) {
                             // do not propagate 'vsb' tag for children with same property
                             // this causes them to be "overriding" their parents' visibility
-                            if (childTag.contains("vsb") && Objects.equals(visibility, childTag.getBoolean("vsb")))
+                            if (childTag.contains("vsb") && Objects.equals(visibility, childTag.getBooleanOr("vsb", true)))
                                 childTag.remove("vsb");
                             chld.add(childTag);
                         }

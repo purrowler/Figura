@@ -47,7 +47,6 @@ public class FiguraToast implements Toast {
 
         long timeDiff = startTime - this.startTime;
 
-        UIHelper.enableBlend();
         int frame = Configs.REDUCED_MOTION.value ? 0 : (int) ((FiguraMod.ticks / 5f) % type.frames);
         gui.blit(RenderPipelines.GUI_TEXTURED, type.texture, 0, 0, 0f, frame * height(), width(), height(), width(), height() * type.frames);
 

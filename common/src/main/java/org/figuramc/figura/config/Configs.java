@@ -247,7 +247,7 @@ public class Configs {
             CONNECTION_TOASTS = new ConfigType.BoolConfig("connection_toasts", DEV, true),
             LOG_OTHERS = new ConfigType.BoolConfig("log_others", DEV, false);
     public static final ConfigType.EnumConfig
-            LOG_PINGS = new ConfigType.EnumConfig("log_pings", DEV, 0, 3);
+            LOG_PINGS = new ConfigType.EnumConfig("log_pings", DEV, 0, 4);
     public static final ConfigType.BoolConfig
             SYNC_PINGS = new ConfigType.BoolConfig("sync_pings", DEV, false) {{
         String tooltip = "config.sync_pings.tooltip.";

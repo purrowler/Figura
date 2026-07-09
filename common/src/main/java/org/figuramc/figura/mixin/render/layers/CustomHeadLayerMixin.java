@@ -32,6 +32,7 @@ import org.figuramc.figura.ducks.FiguraEntityRenderStateExtension;
 import org.figuramc.figura.ducks.FiguraItemStackRenderStateExtension;
 import org.figuramc.figura.ducks.NodeCollectorExtension;
 import org.figuramc.figura.ducks.SkullBlockRendererAccessor;
+import org.figuramc.figura.ducks.SkullBlockRendererHelper;
 import org.figuramc.figura.lua.api.world.ItemStackAPI;
 import org.figuramc.figura.math.vector.FiguraVec3;
 import org.figuramc.figura.model.ParentType;
@@ -88,8 +89,7 @@ public abstract class CustomHeadLayerMixin<S extends LivingEntityRenderState, M 
             // render!!
             if (avatar.pivotPartRender(ParentType.HelmetItemPivot, stack -> {
                 float s = 19f;
-                stack.scale(s, s, s);
-                stack.translate(-0.5d, 0d, -0.5d);
+                stack.scale(-s, -s, s);
 
                 // set item context
                 SkullBlockRendererAccessor.setItem(itemStack);
@@ -97,6 +97,11 @@ public abstract class CustomHeadLayerMixin<S extends LivingEntityRenderState, M 
                 if (id != null)
                     SkullBlockRendererAccessor.setEntity(Minecraft.getInstance().level.getEntity(id));
                 SkullBlockRendererAccessor.setRenderMode(SkullBlockRendererAccessor.SkullRenderMode.HEAD);
+
+                ResolvableProfile skullProfile = itemStack.get(DataComponents.PROFILE);
+                Avatar skullAvatar = skullProfile != null ? AvatarManager.getAvatarForPlayer(skullProfile.partialProfile().id()) : null;
+                SkullBlockRendererHelper.setAvatar(skullAvatar);
+
                 SkullBlockRenderer.submitSkull(f, stack, submitNodeCollector, i, skullModelBase,
                         renderType, entityState.outlineColor, null);
             })) {

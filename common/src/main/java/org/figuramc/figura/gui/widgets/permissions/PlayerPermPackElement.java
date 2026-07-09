@@ -1,6 +1,5 @@
 package org.figuramc.figura.gui.widgets.permissions;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -158,13 +157,10 @@ public class PlayerPermPackElement extends AbstractPermPackElement {
             if (!head) {
                 if (this.skin != null) {
                     // head
-                    UIHelper.enableBlend();
                     gui.blit(RenderPipelines.GUI_TEXTURED, this.skin, x + 4, y + 4, 8f, 8f,32, 32, 8, 8, 64, 64);
 
                     // hat
-                    GlStateManager._enableBlend(0);
                     gui.blit(RenderPipelines.GUI_TEXTURED, this.skin, x + 4, y + 4, 40f, 8f,32, 32, 8, 8, 64, 64);
-                    GlStateManager._disableBlend(0);
                 } else {
                     UIHelper.blit(gui, x + 4, y + 4, 32, 32, UNKNOWN);
                 }

@@ -3,7 +3,6 @@ package org.figuramc.figura.utils.ui;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.font.GlyphInfo;
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -297,11 +296,6 @@ public final class UIHelper {
         entity.setInvisible(invisible);
     }
 
-    public static void enableBlend() {
-        GlStateManager._enableBlend(0);
-        GlStateManager._blendFuncSeparate(770, 771, 1, 0);
-    }
-
     public static void blit(GuiGraphicsExtractor gui, int x, int y, int width, int height, Identifier texture) {
         gui.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0f, 0f, width, height, 1, 1, 1, 1);
     }
@@ -383,8 +377,6 @@ public final class UIHelper {
     }
 
     public static void renderHalfTexture(GuiGraphicsExtractor gui, int x, int y, int width, int height, float u, float v, int regionWidth, int regionHeight, int textureWidth, int textureHeight, Identifier texture) {
-        enableBlend();
-
         // left
         int w = width / 2;
         gui.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, w, height, w, regionHeight, textureWidth, textureHeight);

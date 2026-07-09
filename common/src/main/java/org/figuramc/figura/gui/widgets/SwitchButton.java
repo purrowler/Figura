@@ -70,7 +70,6 @@ public class SwitchButton extends Button {
         }
 
         // set texture
-        UIHelper.enableBlend();
         int x = getX();
         int y = getY();
 

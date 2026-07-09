@@ -106,7 +106,6 @@ public class EntityPreview extends AbstractContainerElement {
         } else {
             // draw
             int s = Math.min(width, height) * 2 / 3;
-            UIHelper.enableBlend();
             gui.blit(RenderPipelines.GUI_TEXTURED, UNKNOWN, x + (width - s) / 2, y + (height - s) / 2, 0f, 64 * ((int) (FiguraMod.ticks / 3f) % 8), s, s,64, 64, 64, 512);
         }
 

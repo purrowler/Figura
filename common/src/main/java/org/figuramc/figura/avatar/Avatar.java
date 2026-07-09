@@ -1,7 +1,6 @@
 package org.figuramc.figura.avatar;
 
 import com.mojang.blaze3d.audio.SoundBuffer;
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -723,7 +722,6 @@ public class Avatar {
         stack.last().normal().scale(1, 1, -1);
 
         Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_FLAT);
-        GlStateManager._disableDepthTest();
 
         renderer.entity = entity;
 
@@ -735,7 +733,6 @@ public class Avatar {
 
         renderer.renderSpecialParts();
 
-        GlStateManager._enableDepthTest();
         Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
         stack.popPose();
 

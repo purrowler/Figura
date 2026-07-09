@@ -21,7 +21,6 @@ import org.figuramc.figura.FiguraMod;
 import org.figuramc.figura.avatar.Avatar;
 import org.figuramc.figura.avatar.AvatarManager;
 import org.figuramc.figura.ducks.FiguraSkullRenderStateExtension;
-import org.figuramc.figura.ducks.FiguraSubmitCallBackExtension;
 import org.figuramc.figura.ducks.PlayerHeadRenderInfoExtension;
 import org.figuramc.figura.ducks.SkullBlockRendererAccessor;
 import org.figuramc.figura.ducks.SkullBlockRendererHelper;
@@ -73,46 +72,34 @@ public abstract class SkullBlockRendererMixin implements BlockEntityRenderer<Sku
         if (localAvatar == null || localAvatar.permissions.get(Permissions.CUSTOM_SKULL) == 0)
             return;
 
-        // GUI skulls: show vanilla skulls instead of vanilla skulls since they are not rendering properly/are invisible
-        if (localDisplayContext == ItemDisplayContext.GUI) {
-            return;
-        }
-
         float tickDelta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
 
-        FiguraSubmitCallBackExtension modelExtension = (FiguraSubmitCallBackExtension) model;
-        modelExtension.figura$addPreRenderingCallback((bufferSource, poseStack) -> {
+        FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+        FiguraMod.pushProfiler(localAvatar);
+        FiguraMod.pushProfiler("skullRender");
 
-            FiguraMod.pushProfiler(FiguraMod.MOD_ID);
-            FiguraMod.pushProfiler(localAvatar);
-            FiguraMod.pushProfiler("skullRender");
+        // event
+        BlockStateAPI b = localBlock == null ? null : new BlockStateAPI(localBlock.blockState, localBlock.blockPos);
+        ItemStackAPI i = localItem != null ? ItemStackAPI.verify(localItem) : null;
+        EntityAPI<?> e = localEntity != null ? EntityAPI.wrap(localEntity) : null;
+        String m = localMode.name();
 
-            // event
-            BlockStateAPI b = localBlock == null ? null : new BlockStateAPI(localBlock.blockState, localBlock.blockPos);
-            ItemStackAPI i = localItem != null ? ItemStackAPI.verify(localItem) : null;
-            EntityAPI<?> e = localEntity != null ? EntityAPI.wrap(localEntity) : null;
-            String m = localMode.name();
+        FiguraMod.pushProfiler(localBlock != null ? localBlock.blockPos.toString() : String.valueOf(i));
 
-            FiguraMod.pushProfiler(localBlock != null ? localBlock.blockPos.toString() : String.valueOf(i));
+        FiguraMod.pushProfiler("event");
+        boolean bool = localAvatar.skullRenderEvent(tickDelta, b, i, e, m);
 
-            FiguraMod.pushProfiler("event");
-            boolean bool = localAvatar.skullRenderEvent(tickDelta, b, i, e, m);
+        // render skull :3
+        FiguraMod.popPushProfiler("render");
+        int prevComplexity = localAvatar.complexity.remaining;
+        localAvatar.complexity.remaining = localAvatar.permissions.get(Permissions.COMPLEXITY);
+        boolean rendered = !bool && localAvatar.skullRender(stack, submitNodeCollector, light, null, yaw);
+        localAvatar.complexity.remaining = prevComplexity;
 
-            // render skull :3
-            FiguraMod.popPushProfiler("render");
-            int prevComplexity = localAvatar.complexity.remaining;
-            localAvatar.complexity.remaining = localAvatar.permissions.get(Permissions.COMPLEXITY);
-            boolean rendered = !bool && localAvatar.skullRender(poseStack, submitNodeCollector, light, null, yaw);
-            localAvatar.complexity.remaining = prevComplexity;
+        FiguraMod.popProfiler(5);
 
-            if (bool || rendered) {
-                FiguraMod.popProfiler(5);
-                return false;
-            }
-
-            FiguraMod.popProfiler(5);
-            return true;
-        });
+        if (bool || rendered)
+            ci.cancel();
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/blockentity/SkullBlockRenderer;submitSkull(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/client/model/object/skull/SkullModelBase;Lnet/minecraft/client/renderer/rendertype/RenderType;ILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"), method = "submit(Lnet/minecraft/client/renderer/blockentity/state/SkullBlockRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V")

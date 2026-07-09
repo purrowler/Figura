@@ -156,7 +156,6 @@ public class ScrollBarWidget extends AbstractWidget implements FiguraWidget {
         isHovered = this.isMouseOver(mouseX, mouseY);
 
         // render the scroll
-        UIHelper.enableBlend();
         int x = getX();
         int y = getY();
         int width = getWidth();

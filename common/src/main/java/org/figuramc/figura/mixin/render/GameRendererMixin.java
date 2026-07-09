@@ -34,6 +34,7 @@ import org.figuramc.figura.utils.EntityUtils;
 import org.figuramc.figura.utils.RenderUtils;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -62,9 +63,6 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
     @Shadow @Final private GuiRenderer guiRenderer;
     @Shadow @Final private GameRenderState gameRenderState;
     @Shadow @Final private net.minecraft.client.renderer.SubmitNodeStorage handAndScreenSubmitNodeStorage;
-
-    @Shadow abstract void bobHurt(CameraRenderState cameraRenderState, PoseStack poseStack);
-    @Shadow abstract void bobView(CameraRenderState cameraRenderState, PoseStack poseStack);
 
     @Unique
     private boolean avatarPostShader = false;
@@ -150,17 +148,6 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
         return camera.getFov();
     }
 
-    @ModifyArg(method = "renderLevel", index = 1,
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/GameRenderer;bobHurt(Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;)V"))
-    private PoseStack renderLevelBobHurt(PoseStack stack) {
-        Avatar avatar = AvatarManager.getAvatar(this.minecraft.getCameraEntity() == null ? this.minecraft.player : this.minecraft.getCameraEntity());
-        if (!RenderUtils.vanillaModelAndScript(avatar) || hasShaders) return stack;
-        stack.pushPose();
-        stack.last().pose().identity();
-        return stack;
-    }
-
     @ModifyArg(method = "<init>", index = 2,
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/render/GuiRenderer;<init>(Lnet/minecraft/client/renderer/state/gui/GuiRenderState;Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher;Ljava/util/List;)V"))
@@ -171,22 +158,18 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
         return newList;
     }
 
-    @WrapOperation(method = "renderLevel",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/GameRenderer;bobView(Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;)V"))
-    private void figura$stopBobView(GameRenderer instance, CameraRenderState cameraRenderState, PoseStack stack, Operation<Void> original) {
-        Avatar avatar = AvatarManager.getAvatar(this.minecraft.getCameraEntity() == null ? this.minecraft.player : this.minecraft.getCameraEntity());
-        if (!RenderUtils.vanillaModelAndScript(avatar) || hasShaders)
-            original.call(instance, cameraRenderState, stack);
-    }
 
     @WrapOperation(method = "renderLevel",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/GameRenderer;bobHurt(Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;)V"))
-    private void figura$stopBobHurt(GameRenderer instance, CameraRenderState cameraRenderState, PoseStack stack, Operation<Void> original) {
+            at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;mul(Lorg/joml/Matrix4fc;)Lorg/joml/Matrix4f;", ordinal = 0),
+            slice = @Slice(from = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/GameRenderer;bobHurt(Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;)V")))
+    private Matrix4f figura$moveBobbingToViewMatrix(Matrix4f projectionMatrix, Matrix4fc bobbingMatrix, Operation<Matrix4f> original) {
         Avatar avatar = AvatarManager.getAvatar(this.minecraft.getCameraEntity() == null ? this.minecraft.player : this.minecraft.getCameraEntity());
         if (!RenderUtils.vanillaModelAndScript(avatar) || hasShaders)
-            original.call(instance, cameraRenderState, stack);
+            return original.call(projectionMatrix, bobbingMatrix);
+
+        this.gameRenderState.levelRenderState.cameraRenderState.viewRotationMatrix.mulLocal(bobbingMatrix);
+        return projectionMatrix;
     }
 
     @Override

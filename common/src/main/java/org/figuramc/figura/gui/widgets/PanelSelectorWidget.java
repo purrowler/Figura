@@ -171,7 +171,6 @@ public class PanelSelectorWidget extends AbstractContainerElement {
         protected void renderTexture(GuiGraphicsExtractor gui, float delta) {
             UIHelper.blitSliced(gui, getX(), getY(), getWidth(), getHeight(), isSelected() ? 24f : 0f, this.isHoveredOrFocused() ? 24f : 0f, 24, 24, 48, 48, TEXTURE);
 
-            UIHelper.enableBlend();
             int size = getTextureSize();
             gui.blit(RenderPipelines.GUI_TEXTURED, texture, getX() + (iconsOnly() ? (getWidth() - size) / 2 : 2), getY() + (getHeight() - size) / 2 + (!isSelected() ? 2 : 0),  u, v, size, size, regionSize, regionSize, textureWidth, textureHeight);
         }

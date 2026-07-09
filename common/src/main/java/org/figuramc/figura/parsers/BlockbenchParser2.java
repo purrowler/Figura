@@ -240,7 +240,7 @@ public class BlockbenchParser2 {
                     name = locatedWithin + name;
                     FiguraMod.debug("Loaded {} texture \"{}\" as path {} (from {})", textureType, name, path, p);
                 } catch (Exception e) {
-                    if (e instanceof IOException || e instanceof NullPointerException)
+                    if ((e instanceof IOException && !(e instanceof FileNotFoundException)) || e instanceof NullPointerException)
                         FiguraMod.LOGGER.error("", e);
 
                     // Try to load from base64

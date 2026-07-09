@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -42,6 +43,7 @@ import org.figuramc.figura.mixin.render.layers.HumanoidArmorLayerAccessor;
 import org.figuramc.figura.model.ParentType;
 import org.figuramc.figura.permissions.Permissions;
 import org.figuramc.figura.utils.FiguraArmorPartRenderer;
+import org.figuramc.figura.utils.PosedModelPartModel;
 import org.figuramc.figura.utils.RenderUtils;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -296,14 +298,17 @@ public abstract class HumanoidArmorLayerMixinFabric<S extends HumanoidRenderStat
         int i = itemStack.has(DataComponents.DYED_COLOR) ? DyedItemColor.getOrDefault(itemStack, -6265536) : -1;
         int order = 0;
 
+        PosedModelPartModel partModel = new PosedModelPartModel(modelPart);
+        List<PartPose> pose = partModel.snapshotPose();
+
         for(EquipmentClientInfo.Layer layer : list) {
             int k = EquipmentLayerRendererAccessor.getColorForLayer(layer, i);
 
             if (k != 0) {
                 Identifier normalArmorResource = ((EquipmentLayerRendererAccessor)this.equipmentRenderer).layerTextureLookup().apply(new EquipmentLayerRenderer.LayerTextureKey(layerType, layer));
-                nodeCollector.order(order++).submitModelPart(modelPart, poseStack, RenderTypes.armorCutoutNoCull(normalArmorResource), light, OverlayTexture.NO_OVERLAY, null, k, null);
+                nodeCollector.order(order++).submitModel(partModel, pose, poseStack, RenderTypes.armorCutoutNoCull(normalArmorResource), light, OverlayTexture.NO_OVERLAY, k, null, 0, null);
                 if (hasGlint)
-                    nodeCollector.order(order++).submitModelPart(modelPart, poseStack, RenderTypes.armorEntityGlint(), light, OverlayTexture.NO_OVERLAY, null, k, null);
+                    nodeCollector.order(order++).submitModel(partModel, pose, poseStack, RenderTypes.armorEntityGlint(), light, OverlayTexture.NO_OVERLAY, k, null, 0, null);
                 hasGlint = false;
             }
         }
@@ -314,7 +319,7 @@ public abstract class HumanoidArmorLayerMixinFabric<S extends HumanoidRenderStat
                     .apply(new EquipmentLayerRenderer.TrimSpriteKey(trim, layerType, location.get()));
 
             RenderType renderType = Sheets.armorTrimsSheet(trim.pattern().value().decal());
-            nodeCollector.order(order).submitModelPart(modelPart, poseStack, renderType, light, OverlayTexture.NO_OVERLAY, textureAtlasSprite, -1, null);
+            nodeCollector.order(order).submitModel(partModel, pose, poseStack, renderType, light, OverlayTexture.NO_OVERLAY, -1, textureAtlasSprite, 0, null);
         }
     }
 

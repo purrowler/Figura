@@ -177,8 +177,6 @@ public class ActionWheel {
             double y = Math.sin(angle) * 15 - 4;
 
             // render icon
-            UIHelper.enableBlend();
-
             // Color is now implemented through vertex colors rather than the color modulator
             int tintColor = color != null ? ColorUtils.rgbaToIntARGB(FiguraVec4.of(color.x, color.y, color.z, 1.0f)) : -1;
             gui.blit(RenderPipelines.GUI_TEXTURED, ICONS,
@@ -208,7 +206,6 @@ public class ActionWheel {
             // texture
             Action.TextureData texture = action.getTexture(isSelected);
             if (texture != null) {
-                UIHelper.enableBlend();
                 gui.blit(RenderPipelines.GUI_TEXTURED, texture.texture.getLocation(),
                         (int) Math.round(xOff - texture.width * texture.scale / 2d),
                         (int) Math.round(yOff - texture.height * texture.scale / 2d),
@@ -472,7 +469,6 @@ public class ActionWheel {
             pose.pushMatrix();
             pose.rotate((rotation + (left ? 180 : 0)) * (float) (Math.PI / 180.0));
 
-            UIHelper.enableBlend();
             // we now use vertex colors
             int tintColor = color != null ? ColorUtils.rgbaToIntARGB(FiguraVec4.of(color.x, color.y, color.z, 1.0f)) : -1;
             gui.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, y,  u, color == null ? v : v + 128, 64, h,64, rh, 256, 256, tintColor);

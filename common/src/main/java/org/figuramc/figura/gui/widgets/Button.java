@@ -96,8 +96,6 @@ public class Button extends net.minecraft.client.gui.components.Button implement
         int v = this.v + this.getV() * this.regionSize;
 
         // draw texture
-        UIHelper.enableBlend();
-
         int size = this.regionSize;
         gui.blit(RenderPipelines.GUI_TEXTURED, this.texture, this.getX() + this.getWidth() / 2 - size / 2, this.getY() + this.getHeight() / 2 - size / 2, u, v, size, size, this.textureWidth, this.textureHeight);
     }

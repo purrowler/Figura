@@ -1,7 +1,6 @@
 package org.figuramc.figura.gui;
 
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -152,7 +151,6 @@ public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortr
         if (pictureInPictureRenderState.fallbackSkin() != null) {
             Identifier texture = pictureInPictureRenderState.fallbackSkin();
             // render skin
-            UIHelper.enableBlend();
             GpuTextureView gpuTextureView = Minecraft.getInstance().getTextureManager().getTexture(texture).getTextureView();
             GpuSampler sampler = Minecraft.getInstance().getTextureManager().getTexture(texture).getSampler();
 
@@ -176,7 +174,6 @@ public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortr
             );
 
             // hat
-            GlStateManager._enableBlend(0);
             guiRenderState.addBlitToCurrentLayer(
                     new BlitRenderState(
                             RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
@@ -195,7 +192,6 @@ public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortr
                             null
                     )
             );
-            GlStateManager._disableBlend(0);
         } else {
             GpuTextureView gpuTextureView = Minecraft.getInstance().getTextureManager().getTexture(PlayerPermPackElement.UNKNOWN).getTextureView();
             GpuSampler sampler = Minecraft.getInstance().getTextureManager().getTexture(PlayerPermPackElement.UNKNOWN).getSampler();

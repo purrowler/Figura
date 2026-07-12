@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface FiguraEntityRenderStateExtension {
     Integer figura$getEntityId();
-    void figura$setEntityId(int id);
+    void figura$setEntityId(Integer id);
     float figura$getTickDelta();
     void figura$setTickDelta(float tickDelta);
 }

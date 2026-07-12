@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.entity.Entity;
 import org.figuramc.figura.avatar.Avatar;
 import org.figuramc.figura.avatar.AvatarManager;
+import org.figuramc.figura.mixin.EntityAccessor;
 import org.figuramc.figura.ducks.CameraRenderStateExtension;
 import org.figuramc.figura.ducks.EntityRendererAccessor;
 import org.figuramc.figura.ducks.FiguraEntityRenderStateExtension;
@@ -31,7 +32,8 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
 
     @Inject(at = @At("HEAD"), method = "extractRenderState")
     private void extractRenderState(T entity, S entityRenderState, float f, CallbackInfo ci) {
-        ((FiguraEntityRenderStateExtension)entityRenderState).figura$setEntityId(entity.getId());
+        int rawId = ((EntityAccessor) entity).figura$getRawId();
+        ((FiguraEntityRenderStateExtension)entityRenderState).figura$setEntityId(rawId == 0 ? null : rawId);
         ((FiguraEntityRenderStateExtension)entityRenderState).figura$setTickDelta(f);
     }
 

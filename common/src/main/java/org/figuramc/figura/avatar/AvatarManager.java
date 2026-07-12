@@ -18,6 +18,7 @@ import org.figuramc.figura.FiguraMod;
 import org.figuramc.figura.avatar.local.LocalAvatarLoader;
 import org.figuramc.figura.backend2.NetworkStuff;
 import org.figuramc.figura.ducks.FiguraEntityRenderStateExtension;
+import org.figuramc.figura.mixin.EntityAccessor;
 import org.figuramc.figura.gui.FiguraToast;
 import org.figuramc.figura.gui.widgets.lists.AvatarList;
 import org.figuramc.figura.lua.api.particle.ParticleAPI;
@@ -148,6 +149,10 @@ public class AvatarManager {
     }
 
     private static Avatar getAvatarForEntity(Entity entity) {
+        
+        if (((EntityAccessor) entity).figura$getRawId() == 0)
+            return null;
+
         // get loaded
         Avatar loaded = LOADED_CEM.get(entity.getId());
         if (loaded != null)

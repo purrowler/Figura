@@ -13,4 +13,6 @@ public interface EntityAccessor {
     @Intrinsic
     @Accessor
     Level getLevel();
+    @Accessor("id")
+    int figura$getRawId();
 }

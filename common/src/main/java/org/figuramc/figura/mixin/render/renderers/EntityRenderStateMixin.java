@@ -24,7 +24,7 @@ public class EntityRenderStateMixin implements FiguraEntityRenderStateExtension 
     }
 
     @Override
-    public void figura$setEntityId(int id) {
+    public void figura$setEntityId(Integer id) {
         this.figura$entityId = id;
     }
 

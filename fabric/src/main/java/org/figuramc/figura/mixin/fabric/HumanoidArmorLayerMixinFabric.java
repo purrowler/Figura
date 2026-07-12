@@ -91,8 +91,7 @@ public abstract class HumanoidArmorLayerMixinFabric<S extends HumanoidRenderStat
     // This prevents double rendering (vanilla + pivot) and ensures trims/glint respect visibility.
     @Inject(at = @At("HEAD"), method = "renderArmorPiece", cancellable = true)
     public void figura$cancelVanillaArmor(PoseStack matrices, SubmitNodeCollector submitNodeCollector, ItemStack stack, EquipmentSlot armorSlot, int light, S state, CallbackInfo ci) {
-        if (figura$avatar != null && !figura$renderingVanillaArmor &&
-                figura$avatar.permissions.get(Permissions.VANILLA_MODEL_EDIT) == 1) {
+        if (figura$avatar != null && !figura$renderingVanillaArmor) {
             ci.cancel();
         }
     }

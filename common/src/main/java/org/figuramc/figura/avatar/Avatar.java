@@ -70,6 +70,7 @@ import org.figuramc.figura.permissions.Permissions;
 import org.figuramc.figura.utils.ColorUtils;
 import org.figuramc.figura.utils.EntityUtils;
 import org.figuramc.figura.utils.PathUtils;
+import org.figuramc.figura.utils.PlatformUtils;
 import org.figuramc.figura.utils.RefilledNumber;
 import org.figuramc.figura.utils.Version;
 import org.figuramc.figura.utils.ui.UIHelper;
@@ -384,12 +385,22 @@ public class Avatar {
             run("TICK", tick);
     }
 
+    private static final boolean HAS_IRIS = PlatformUtils.isModLoaded("iris") || PlatformUtils.isModLoaded("oculus");
+
     public void renderEvent(float delta, FiguraMat4 poseMatrix) {
+        if (HAS_IRIS && net.irisshaders.iris.shadows.ShadowRenderer.ACTIVE)
+            return;
+
         if (loaded && luaRuntime != null && luaRuntime.getUser() != null)
             run("RENDER", render, delta, renderMode.name(), poseMatrix);
     }
 
     public void postRenderEvent(float delta, FiguraMat4 poseMatrix) {
+        if (HAS_IRIS && net.irisshaders.iris.shadows.ShadowRenderer.ACTIVE) {
+            renderMode = EntityRenderMode.OTHER;
+            return;
+        }
+
         if (loaded && luaRuntime != null && luaRuntime.getUser() != null)
             run("POST_RENDER", render.post(), delta, renderMode.name(), poseMatrix);
         renderMode = EntityRenderMode.OTHER;
@@ -1036,10 +1047,8 @@ public class Avatar {
 
     public void clearSounds() {
         SoundAPI.getSoundEngine().figura$stopSound(owner, null);
-        if (SoundAPI.getSoundEngine().figura$isEngineActive()) {
-            for (SoundBuffer value : customSounds.values())
-                value.releaseAlBuffer();
-        }
+        if (SoundAPI.getSoundEngine().figura$isEngineActive())
+            SoundAPI.getSoundEngine().figura$releaseAlBuffers(customSounds.values());
     }
 
     public void closeBuffers() {

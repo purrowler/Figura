@@ -28,6 +28,7 @@ import org.figuramc.figura.model.rendering.texture.FiguraTexture;
 import org.figuramc.figura.model.rendering.texture.FiguraTextureSet;
 import org.figuramc.figura.model.rendertasks.RenderTask;
 import org.figuramc.figura.utils.ColorUtils;
+import org.figuramc.figura.utils.PlatformUtils;
 import org.figuramc.figura.utils.ui.UIHelper;
 
 import java.util.*;
@@ -533,6 +534,10 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
     }
 
     protected void calculatePartMatrices(FiguraModelPart part) {
+        calculatePartMatrices(part, true);
+    }
+
+    protected void calculatePartMatrices(FiguraModelPart part, boolean parentVisible) {
         FiguraMod.pushProfiler(part.name);
 
         PartCustomization custom = part.customization;
@@ -552,6 +557,9 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
         part.applyVanillaTransforms(vanillaModelData);
         part.applyExtraTransforms(customizationStack.peek());
 
+        boolean effectivelyVisible = parentVisible && custom.visible
+                && (ignoreVanillaVisibility || custom.vanillaVisible == null || custom.vanillaVisible);
+
         // push customization stack
         FiguraMod.popPushProfiler("calculatePartMatrices");
         custom.recalculate();
@@ -566,7 +574,7 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
             part.savedPartToWorldMat.set(mat);
 
             // save pivot transforms so they are available during the layers loop
-            if (part.parentType.isPivot && allowPivotParts) {
+            if (part.parentType.isPivot && allowPivotParts && effectivelyVisible) {
                 FiguraMod.popPushProfiler("savePivotParts");
                 FiguraVec3 pivot = custom.getPivot().copy().add(custom.getOffsetPivot());
                 pivotOffsetter.setPos(pivot);
@@ -580,7 +588,7 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
         // render children
         FiguraMod.popPushProfiler("children");
         for (FiguraModelPart child : part.children)
-            calculatePartMatrices(child);
+            calculatePartMatrices(child, effectivelyVisible);
 
         // reset the parent
         part.resetVanillaTransforms();
@@ -707,6 +715,11 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
     }
 
     private static class VertexBuffer {
+        private static final int SECONDARY_DRAW_ORDER = 1;
+
+        private static final boolean HAS_IRIS = PlatformUtils.isModLoaded("iris") || PlatformUtils.isModLoaded("oculus");
+        private static final RenderType SOLID_RENDER_TYPE = FiguraRenderTypes.SOLID.get(null);
+
         private final HashMap<RenderType, List<Consumer<VertexConsumer>>> primaryBuffers = new LinkedHashMap<>();
         private final HashMap<RenderType, List<Consumer<VertexConsumer>>> secondaryBuffers = new LinkedHashMap<>();
 
@@ -719,9 +732,13 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
         public void consume(boolean primary, net.minecraft.client.renderer.SubmitNodeCollector submitNodeCollector, com.mojang.blaze3d.vertex.PoseStack poseStack) {
             if (submitNodeCollector == null || poseStack == null) return;
             HashMap<RenderType, List<Consumer<VertexConsumer>>> map = primary ? primaryBuffers : secondaryBuffers;
+            net.minecraft.client.renderer.OrderedSubmitNodeCollector collector = primary ? submitNodeCollector : submitNodeCollector.order(SECONDARY_DRAW_ORDER);
+            boolean inIrisShadowPass = HAS_IRIS && net.irisshaders.iris.shadows.ShadowRenderer.ACTIVE;
             for (Map.Entry<RenderType, List<Consumer<VertexConsumer>>> entry : map.entrySet()) {
+                if (inIrisShadowPass && entry.getKey() == SOLID_RENDER_TYPE)
+                    continue;
                 List<Consumer<VertexConsumer>> consumers = new java.util.ArrayList<>(entry.getValue());
-                submitNodeCollector.submitCustomGeometry(poseStack, entry.getKey(), (pose, vertexConsumer) -> {
+                collector.submitCustomGeometry(poseStack, entry.getKey(), (pose, vertexConsumer) -> {
                     for (Consumer<VertexConsumer> consumer : consumers)
                         consumer.accept(vertexConsumer);
                 });

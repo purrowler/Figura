@@ -3,6 +3,7 @@ package org.figuramc.figura.mixin.sound;
 import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.audio.Library;
 import com.mojang.blaze3d.audio.Listener;
+import com.mojang.blaze3d.audio.SoundBuffer;
 
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.SubtitleOverlay;
@@ -172,6 +173,20 @@ public abstract class SoundEngineMixin implements SoundEngineAccessor {
             figuraHandlers.clear();
             figuraChannel.clear();
         }
+    }
+
+    @Override @Intrinsic
+    public void figura$releaseAlBuffers(Collection<SoundBuffer> buffers) {
+        List<SoundBuffer> copy = List.copyOf(buffers);
+        this.executor.execute(() -> {
+            for (SoundBuffer buffer : copy) {
+                try {
+                    buffer.releaseAlBuffer();
+                } catch (Exception e) {
+                    org.figuramc.figura.FiguraMod.LOGGER.warn("soundbuffer relesae failed", e);
+                }
+            }
+        });
     }
 
     @Override @Intrinsic

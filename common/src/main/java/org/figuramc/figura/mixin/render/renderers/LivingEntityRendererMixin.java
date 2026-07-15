@@ -176,7 +176,10 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
 
         // populate pivot customizations BEFORE the layers loop so pivotPartRender()
         // uses current-frame transforms instead of stale ones from the previous frame
+        figura$transformParts(localAvatar, model);
         localAvatar.updateMatrices(model, poseStack);
+        if (localAvatar.luaRuntime != null)
+            localAvatar.luaRuntime.vanilla_model.PLAYER.restore(model);
 
         NodeCollectorExtension nodeCollectorExtension = (NodeCollectorExtension) submitNodeCollector;
 

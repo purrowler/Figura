@@ -41,8 +41,14 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
 
     public static final FiguraMat4 CAMERA_POS_TO_WORLD_MATRIX = FiguraMat4.of();
 
+    private static final boolean HAS_IRIS = PlatformUtils.isModLoaded("iris") || PlatformUtils.isModLoaded("oculus");
+
     private static final PartCustomization pivotOffsetter = new PartCustomization();
     protected static final VertexBuffer VERTEX_BUFFER = new VertexBuffer();
+
+    private static boolean inIrisShadowPass() {
+        return HAS_IRIS && net.irisshaders.iris.shadows.ShadowRenderer.ACTIVE;
+    }
 
     public ImmediateFiguraRenderer(Avatar avatar) {
         super(avatar);
@@ -300,7 +306,7 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
         if (thisPassedPredicate) {
             // recalculate world matrices
             FiguraMod.popPushProfiler("worldMatrices");
-            if (allowMatrixUpdate) {
+            if (allowMatrixUpdate && !inIrisShadowPass()) {
                 FiguraMat4 mat = partToWorldMatrices(custom);
                 part.savedPartToWorldMat.set(mat);
             }
@@ -570,8 +576,10 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
         if (thisPassedPredicate) {
             // part to world matrices
             FiguraMod.popPushProfiler("worldMatrices");
-            FiguraMat4 mat = partToWorldMatrices(custom);
-            part.savedPartToWorldMat.set(mat);
+            if (!inIrisShadowPass()) {
+                FiguraMat4 mat = partToWorldMatrices(custom);
+                part.savedPartToWorldMat.set(mat);
+            }
 
             // save pivot transforms so they are available during the layers loop
             if (part.parentType.isPivot && allowPivotParts && effectivelyVisible) {

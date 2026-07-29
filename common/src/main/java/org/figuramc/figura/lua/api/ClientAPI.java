@@ -12,6 +12,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.Registry;
@@ -681,11 +682,12 @@ public class ClientAPI {
     )
     public static TextureAtlasAPI getAtlas(@LuaNotNil String atlas) {
         Identifier path = LuaUtils.parsePath(atlas);
-        try {
-            return new TextureAtlasAPI(Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(path));
-        } catch (Exception ignored) {
-            return null;
-        }
+        TextureAtlas[] found = new TextureAtlas[1];
+        Minecraft.getInstance().getAtlasManager().forEach((id, textureAtlas) -> {
+            if (found[0] == null && (id.equals(path) || textureAtlas.location().equals(path)))
+                found[0] = textureAtlas;
+        });
+        return found[0] != null ? new TextureAtlasAPI(found[0]) : null;
     }
 
     @LuaWhitelist

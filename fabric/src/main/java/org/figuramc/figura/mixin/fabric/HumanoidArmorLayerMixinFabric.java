@@ -294,7 +294,7 @@ public abstract class HumanoidArmorLayerMixinFabric<S extends HumanoidRenderStat
 
         List<EquipmentClientInfo.Layer> list = ((EquipmentLayerRendererAccessor)this.equipmentRenderer).figura$getAssetsManager().get(location.get()).getLayers(layerType);
 
-        int i = itemStack.has(DataComponents.DYED_COLOR) ? DyedItemColor.getOrDefault(itemStack, -6265536) : -1;
+        int i = DyedItemColor.getOrDefault(itemStack, 0);
         int order = 0;
 
         PosedModelPartModel partModel = new PosedModelPartModel(modelPart);

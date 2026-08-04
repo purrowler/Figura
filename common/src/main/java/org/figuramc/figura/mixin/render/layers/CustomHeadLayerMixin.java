@@ -138,5 +138,7 @@ public abstract class CustomHeadLayerMixin<S extends LivingEntityRenderState, M 
         if (id != null && Minecraft.getInstance().level != null && Minecraft.getInstance().level.getEntity(id) != null)
             SkullBlockRendererAccessor.setEntity(Minecraft.getInstance().level.getEntity(id));
         SkullBlockRendererAccessor.setRenderMode(SkullBlockRendererAccessor.SkullRenderMode.HEAD);
+        ResolvableProfile skullProfile = stack.get(DataComponents.PROFILE);
+        SkullBlockRendererHelper.setAvatar(skullProfile != null ? AvatarManager.getAvatarForPlayer(skullProfile.partialProfile().id()) : null);
     }
 }

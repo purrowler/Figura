@@ -29,14 +29,9 @@ public class SubmitNodeStorage$ModelSubmitMixin <S> implements FiguraSubmitCallB
     @Inject(method = "<init>", at = @At("TAIL"))
     private void figura$snapshotModelCallbacks(RenderType renderType, Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, TextureAtlasSprite sprite, Pose sheetedDecalPose, CallbackInfo ci) {
         FiguraSubmitCallBackExtension modelExtension = (FiguraSubmitCallBackExtension) model;
-
-        List<BiFunction<SubmitNodeCollector, PoseStack, Boolean>> pendingPre = modelExtension.figura$getPreRenderingCallbacks();
-        figura$preRenderingCallback.addAll(pendingPre);
-        pendingPre.clear();
-
-        List<Runnable> pendingPost = modelExtension.figura$getPostRenderingCallbacks();
-        figura$postRenderingCallback.addAll(pendingPost);
-        pendingPost.clear();
+        figura$preRenderingCallback.addAll(modelExtension.figura$getPreRenderingCallbacks());
+        figura$postRenderingCallback.addAll(modelExtension.figura$getPostRenderingCallbacks());
+        modelExtension.figura$markCallbacksDrained();
     }
 
     @Override

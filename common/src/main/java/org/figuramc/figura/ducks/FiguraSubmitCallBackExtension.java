@@ -17,6 +17,9 @@ public interface FiguraSubmitCallBackExtension {
         return List.of();
     }
 
+    default void figura$markCallbacksDrained() {
+    }
+
     default boolean figura$getPreventAnimSetup() {
         return false;
     }

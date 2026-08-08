@@ -625,6 +625,17 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
             pushToBuffer(faceCount, primary, customization, textureSet, vertices);
         if (secondary.renderType != null)
             pushToBuffer(faceCount, secondary, customization, textureSet, vertices);
+        if (outlineColor != 0 && !glowing) {
+            Identifier outlineTexture = primary.textureId != null ? primary.textureId : secondary.textureId;
+            if (outlineTexture != null) {
+                VertexData outlineData = new VertexData();
+                outlineData.renderType = RenderTypes.outline(outlineTexture);
+                outlineData.color = ColorUtils.intToRGB(outlineColor);
+                outlineData.fullBright = true;
+                outlineData.primary = true;
+                pushToBuffer(faceCount, outlineData, customization, textureSet, vertices);
+            }
+        }
     }
 
     private VertexData getTexture(PartCustomization customization, FiguraTextureSet textureSet, boolean primary) {
@@ -637,6 +648,7 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
 
         // get texture
         Identifier id = textureSet.getOverrideTexture(avatar.owner, texture);
+        ret.textureId = id;
 
         // color
         ret.color = primary ? customization.color : customization.color2;
@@ -720,6 +732,7 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
         public float vertexOffset;
         public FiguraVec3 color;
         public boolean primary;
+        public Identifier textureId;
     }
 
     private static class VertexBuffer {

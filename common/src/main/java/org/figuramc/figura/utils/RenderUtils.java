@@ -11,7 +11,6 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -158,15 +157,13 @@ public class RenderUtils {
         }
     }
 
-    static final ItemStackRenderState itemStackRenderState = new ItemStackRenderState();
-    public static void renderStatic(LivingEntity entity, ItemStack item, ItemDisplayContext displayMode, PoseStack poseStack, int newLight, int newOverlay) {
+    public static void renderStatic(LivingEntity entity, ItemStack item, ItemDisplayContext displayMode, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, ItemStackRenderState renderState, int newLight, int newOverlay) {
         Minecraft client = Minecraft.getInstance();
-        SubmitNodeStorage submitNodeStorage = ((org.figuramc.figura.ducks.GameRendererAccessor) client.gameRenderer).figura$getHandAndScreenSubmitNodeStorage();
         if (entity != null)
-            client.getItemModelResolver().updateForLiving(itemStackRenderState, item, displayMode, entity);
+            client.getItemModelResolver().updateForLiving(renderState, item, displayMode, entity);
         else
-            client.getItemModelResolver().updateForTopItem(itemStackRenderState, item, displayMode, client.level, null, 0);
-        itemStackRenderState.submit(poseStack, submitNodeStorage, newLight, newOverlay, 0);
+            client.getItemModelResolver().updateForTopItem(renderState, item, displayMode, client.level, null, 0);
+        renderState.submit(poseStack, submitNodeCollector, newLight, newOverlay, 0);
     }
 
 

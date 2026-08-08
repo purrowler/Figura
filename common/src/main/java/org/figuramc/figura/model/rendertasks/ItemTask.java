@@ -3,6 +3,7 @@ package org.figuramc.figura.model.rendertasks;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -34,6 +35,7 @@ public class ItemTask extends RenderTask {
     private ItemDisplayContext displayMode = ItemDisplayContext.NONE;
     private boolean left = false;
     private int cachedComplexity;
+    private final ItemStackRenderState renderState = new ItemStackRenderState();
 
     public ItemTask(String name, Avatar owner, FiguraModelPart parent) {
         super(name, owner, parent);
@@ -49,7 +51,7 @@ public class ItemTask extends RenderTask {
         int seed = entity != null ? entity.getId() + displayMode.ordinal() : 0;
         RenderUtils.renderStatic(
                 entity, item, displayMode,
-                poseStack,
+                poseStack, submitNodeCollector, renderState,
                 newLight, newOverlay
         );
     }

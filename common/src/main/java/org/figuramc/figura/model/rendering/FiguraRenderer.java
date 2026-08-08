@@ -64,6 +64,7 @@ public abstract class FiguraRenderer {
     public int overlay;
     public float alpha;
     public boolean translucent, glowing;
+    public int outlineColor;
     public FiguraMat4 posMat = FiguraMat4.of();
     public FiguraMat3 normalMat = FiguraMat3.of();
 

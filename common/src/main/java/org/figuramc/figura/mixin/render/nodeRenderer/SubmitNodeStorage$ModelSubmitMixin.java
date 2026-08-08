@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.figuramc.figura.ducks.FiguraSubmitCallBackExtension;
+import org.figuramc.figura.model.rendering.OutlineCallbackSnapshot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,9 +30,18 @@ public class SubmitNodeStorage$ModelSubmitMixin <S> implements FiguraSubmitCallB
     @Inject(method = "<init>", at = @At("TAIL"))
     private void figura$snapshotModelCallbacks(RenderType renderType, Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, TextureAtlasSprite sprite, Pose sheetedDecalPose, CallbackInfo ci) {
         FiguraSubmitCallBackExtension modelExtension = (FiguraSubmitCallBackExtension) model;
-        figura$preRenderingCallback.addAll(modelExtension.figura$getPreRenderingCallbacks());
-        figura$postRenderingCallback.addAll(modelExtension.figura$getPostRenderingCallbacks());
-        modelExtension.figura$markCallbacksDrained();
+        if (renderType.isOutline() && model == OutlineCallbackSnapshot.model) {
+            figura$preRenderingCallback.addAll(OutlineCallbackSnapshot.PRE);
+            figura$postRenderingCallback.addAll(OutlineCallbackSnapshot.POST);
+            return;
+        }
+        List<BiFunction<SubmitNodeCollector, PoseStack, Boolean>> pendingPre = modelExtension.figura$getPreRenderingCallbacks();
+        figura$preRenderingCallback.addAll(pendingPre);
+        List<Runnable> pendingPost = modelExtension.figura$getPostRenderingCallbacks();
+        figura$postRenderingCallback.addAll(pendingPost);
+        OutlineCallbackSnapshot.set(model, pendingPre, pendingPost);
+        pendingPre.clear();
+        pendingPost.clear();
     }
 
     @Override

@@ -70,9 +70,12 @@ public abstract class PlayerItemInHandLayerMixin <S extends AvatarRenderState, M
             stack.translate(0, 0, 7 / 16f);
             ItemTransform transform = ((FiguraItemStackRenderStateExtension)itemStackRenderState).figura$getItemTransform();
             NodeCollectorExtension nodeCollectorExtension = (NodeCollectorExtension) submitNodeCollector;
+            PoseStack.Pose capturedPose = stack.last().copy();
             nodeCollectorExtension.submitFiguraModel(av, avatarRenderState, (avatar, entityState, SubmitNodeCollector) -> {
-                if (!avatar.itemRenderEvent(ItemStackAPI.verify(((FiguraItemStackRenderStateExtension)itemStackRenderState).figura$getItemStack()), ((FiguraItemStackRenderStateExtension)itemStackRenderState).figura$getDisplayContext().name(), FiguraVec3.fromVec3f(transform.translation()), FiguraVec3.of(transform.rotation().z(), transform.rotation().y(), transform.rotation().x()), FiguraVec3.fromVec3f(transform.scale()), ((FiguraItemStackRenderStateExtension) itemStackRenderState).figura$isLeftHanded(), stack, submitNodeCollector, light, OverlayTexture.NO_OVERLAY))
-                    itemStackRenderState.submit(stack, submitNodeCollector, light, OverlayTexture.NO_OVERLAY, entityState.outlineColor);
+                PoseStack localStack = new PoseStack();
+                localStack.last().set(capturedPose);
+                if (!avatar.itemRenderEvent(ItemStackAPI.verify(((FiguraItemStackRenderStateExtension)itemStackRenderState).figura$getItemStack()), ((FiguraItemStackRenderStateExtension)itemStackRenderState).figura$getDisplayContext().name(), FiguraVec3.fromVec3f(transform.translation()), FiguraVec3.of(transform.rotation().z(), transform.rotation().y(), transform.rotation().x()), FiguraVec3.fromVec3f(transform.scale()), ((FiguraItemStackRenderStateExtension) itemStackRenderState).figura$isLeftHanded(), localStack, submitNodeCollector, light, OverlayTexture.NO_OVERLAY))
+                    itemStackRenderState.submit(localStack, submitNodeCollector, light, OverlayTexture.NO_OVERLAY, entityState.outlineColor);
 
                 return null;
             });

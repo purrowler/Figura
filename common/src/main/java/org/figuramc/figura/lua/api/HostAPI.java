@@ -39,7 +39,6 @@ import org.figuramc.figura.lua.docs.LuaMethodDoc;
 import org.figuramc.figura.lua.docs.LuaMethodOverload;
 import org.figuramc.figura.lua.docs.LuaTypeDoc;
 import org.figuramc.figura.math.vector.FiguraVec3;
-import org.figuramc.figura.mixin.LivingEntityAccessor;
 import org.figuramc.figura.mixin.gui.ChatComponentAccessor;
 import org.figuramc.figura.mixin.gui.ChatScreenAccessor;
 import org.figuramc.figura.model.rendering.texture.FiguraTexture;
@@ -601,7 +600,7 @@ public class HostAPI {
     public boolean isJumping() {
         LocalPlayer player = this.minecraft.player;
         if (isHost() && player != null)
-            return ((LivingEntityAccessor) player).isJumping();
+            return player.isJumping();
         return false;
     }
 

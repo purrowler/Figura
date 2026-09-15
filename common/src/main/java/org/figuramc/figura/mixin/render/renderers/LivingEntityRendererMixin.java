@@ -208,13 +208,17 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             FiguraMod.popPushProfiler("renderEvent");
             avatar.renderEvent(tickDelta, poseMatrix);
 
-            if (avatar.renderer != null)
-                avatar.renderer.outlineColor = livingEntityState.outlineColor;
+            var localRenderer = avatar.renderer;
+            if (localRenderer != null) {
+                localRenderer.outlineColor = livingEntityState.outlineColor;
+                for (var queue : localRenderer.pivotCustomizations.values())
+                    queue.clear();
+            }
             avatar.render(entity, livingEntityState.yRot, tickDelta, translucent ? 0.15f : 1f, poseStack2, bufferSource, livingEntityState.lightCoords, overlay, model, filter, translucent, glowing);
 
             // Submit deferred items using fresh pivot transforms from commonRender()
             FiguraMod.popPushProfiler("deferredItems");
-            var localRenderer = avatar.renderer;
+            //var localRenderer = avatar.renderer;
             if (localRenderer != null) {
                 for (var deferredItem : localRenderer.deferredItems) {
                     avatar.pivotPartRender(deferredItem.pivotType(), stack -> {

@@ -1,6 +1,6 @@
 package org.figuramc.figura.gui.widgets.lists;
 
-import net.minecraft.util.Util;
+import com.mojang.blaze3d.Blaze3D;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -77,7 +77,7 @@ public class AvatarList extends AbstractList {
                 new FiguraIdentifier("textures/gui/folder.png"),
                 60, 20,
                 FiguraText.of("gui.wardrobe.folder.tooltip"),
-                button -> Util.getPlatform().openUri(LocalAvatarFetcher.getLocalAvatarDirectory().toUri()))
+                button -> Blaze3D.openPath(LocalAvatarFetcher.getLocalAvatarDirectory()))
         );
 
         // scrollbar

@@ -6,7 +6,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import org.figuramc.figura.ducks.FiguraSubmitCallBackExtension;
 import org.figuramc.figura.model.rendering.OutlineCallbackSnapshot;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,7 +28,7 @@ public class SubmitNodeStorage$ModelSubmitMixin <S> implements FiguraSubmitCallB
     private final List<Runnable> figura$postRenderingCallback = new ArrayList<>();
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void figura$snapshotModelCallbacks(RenderType renderType, Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, TextureAtlasSprite sprite, Pose sheetedDecalPose, CallbackInfo ci) {
+    private void figura$snapshotModelCallbacks(RenderType renderType, Pose pose, Model<? super S> model, S state, int lightCoords, int overlayCoords, int tintedColor, UvMapping uvMapping, Pose sheetedDecalPose, CallbackInfo ci) {
         FiguraSubmitCallBackExtension modelExtension = (FiguraSubmitCallBackExtension) model;
         if (renderType.isOutline() && model == OutlineCallbackSnapshot.model) {
             figura$preRenderingCallback.addAll(OutlineCallbackSnapshot.PRE);

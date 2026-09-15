@@ -1,5 +1,6 @@
 package org.figuramc.figura.gui.widgets.permissions;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -217,7 +218,7 @@ public class PlayerPermPackElement extends AbstractPermPackElement {
             return false;
 
         // context menu on right click
-        if (mouseButtonEvent.button() == 1) {
+        if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
             context.setX((int) mouseX);
             context.setY((int) mouseY);
             context.setVisible(true);

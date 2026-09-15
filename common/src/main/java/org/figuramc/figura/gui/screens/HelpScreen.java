@@ -1,5 +1,6 @@
 package org.figuramc.figura.gui.screens;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -61,7 +62,7 @@ public class HelpScreen extends AbstractPanelScreen {
                 double mouseX = mouseButtonEvent.x();
                 double mouseY = mouseButtonEvent.y();
 
-                if (Configs.EASTER_EGGS.value && this.isHoveredOrFocused() && this.isMouseOver(mouseX, mouseY) && mouseButtonEvent.button() == 1) {
+                if (Configs.EASTER_EGGS.value && this.isHoveredOrFocused() && this.isMouseOver(mouseX, mouseY) && mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
                     int dim = getTextureSize();
                     int x = (int) (Math.random() * dim) + getX() + 2;
                     int y = (int) (Math.random() * dim) + getY() + 2;

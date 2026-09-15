@@ -1,5 +1,6 @@
 package org.figuramc.figura.gui.screens;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
@@ -12,7 +13,6 @@ import org.figuramc.figura.gui.widgets.Label;
 import org.figuramc.figura.utils.FiguraIdentifier;
 import org.figuramc.figura.utils.FiguraText;
 import org.joml.Matrix3x2fStack;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 
@@ -81,10 +81,10 @@ public class GameScreen extends AbstractPanelScreen {
     public boolean keyPressed(KeyEvent keyEvent) {
         int keyCode = keyEvent.key();
         switch (keyCode) {
-            case GLFW.GLFW_KEY_R -> grid.init();
-            case GLFW.GLFW_KEY_P -> paused = !paused;
-            case GLFW.GLFW_KEY_SPACE -> grid.tick();
-            case GLFW.GLFW_KEY_F1 -> {
+            case InputConstants.KEY_R -> grid.init();
+            case InputConstants.KEY_P -> paused = !paused;
+            case InputConstants.KEY_SPACE -> grid.tick();
+            case InputConstants.KEY_F1 -> {
                 keys.setVisible(!keys.isVisible());
                 stats.setVisible(!stats.isVisible());
             }

@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.util.Util;
+import com.mojang.blaze3d.Blaze3D;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.apache.commons.codec.binary.Base64;
@@ -119,7 +119,7 @@ public class AvatarWizard {
                 .write("avatar.png", iconTexture);
 
         //open file manager
-        Util.getPlatform().openUri(folder.toUri());
+        Blaze3D.openPath(folder);
     }
 
     private byte[] buildMetadata(String name) {

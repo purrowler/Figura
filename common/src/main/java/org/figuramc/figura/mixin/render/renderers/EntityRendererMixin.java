@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class EntityRendererMixin<T extends Entity, S extends EntityRenderState> implements EntityRendererAccessor {
 
     @Inject(at = @At("HEAD"), method = "shouldRender", cancellable = true)
-    private void shouldRender(T entity, Frustum frustum, double d, double e, double f, CallbackInfoReturnable<Boolean> cir) {
+    private void shouldRender(T entity, Frustum frustum, double d, double e, double f, float partialTick, CallbackInfoReturnable<Boolean> cir) {
         Avatar avatar = AvatarManager.getAvatar(entity);
         if (avatar != null && avatar.permissions.get(Permissions.OFFSCREEN_RENDERING) == 1)
             cir.setReturnValue(true);

@@ -74,7 +74,7 @@ public abstract class ItemInHandLayerMixin<S extends ArmedEntityRenderState, M e
         if (av.pivotPartRender(left ? ParentType.LeftItemPivot : ParentType.RightItemPivot, stack -> {
             final float s = 16f;
             stack.scale(s, s, s);
-            stack.mulPose(Axis.XP.rotationDegrees(-90f));
+            stack.rotate(Axis.XP.rotationDegrees(-90f));
             // Must do this bs manually
             if (((FiguraItemStackRenderStateExtension)itemStackRenderState).figura$getItemStack().getItem() instanceof BlockItem bl && bl.getBlock() instanceof AbstractSkullBlock) {
                 Entity entity = AvatarManager.getEntity(state);

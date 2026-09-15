@@ -103,8 +103,7 @@ public class ConfigScreen extends AbstractPanelScreen {
 
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
-        int keyCode = keyEvent.key();
-        return list.updateKey(keyCode == 256 ? InputConstants.UNKNOWN : InputConstants.getKey(keyEvent)) || super.keyPressed(keyEvent);
+        return list.updateKey(keyEvent.key() == InputConstants.KEY_ESCAPE ? InputConstants.UNKNOWN : InputConstants.getKey(keyEvent)) || super.keyPressed(keyEvent);
     }
 
     private static void loadNbt() {

@@ -1,5 +1,6 @@
 package org.figuramc.figura.gui.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
@@ -64,7 +65,7 @@ public abstract class AbstractContainerElement extends AbstractContainerEventHan
             setFocused(widget);
 
         if (widget != null) {
-            if (mouseButtonEvent.button() == 0) this.setDragging(true);
+            if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT) this.setDragging(true);
             return true;
         }
 

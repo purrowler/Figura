@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -26,6 +27,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import org.figuramc.figura.avatar.Avatar;
 import org.figuramc.figura.ducks.FiguraSubmitCallBackExtension;
 import org.figuramc.figura.lua.api.vanilla_model.VanillaPart;
@@ -174,13 +176,13 @@ public class RenderUtils {
         assert (selection.size() >= 3);
 
 
-        AvatarRenderer<AbstractClientPlayer> avatarRenderer = Minecraft.getInstance().getEntityRenderDispatcher().getPlayerRenderer(Minecraft.getInstance().player);
+        AvatarRenderer<?> avatarRenderer = (AvatarRenderer<?>) Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(Minecraft.getInstance().player);
 
         if (selection.get(1)) {
             PlayerModel playerModel = avatarRenderer.getModel();
             ((FiguraSubmitCallBackExtension) playerModel).figura$addPreRenderingCallback(preRender);
             ((FiguraSubmitCallBackExtension) playerModel).figura$addPostRenderingCallback(postRender);
-            submitNodeStorage.submitModel(playerModel, null, dummyPoseStack, RenderTypes.LINES, 0, 0, 0, null);
+            submitNodeStorage.submitModel(playerModel, null, dummyPoseStack, RenderTypes.LINES, 0, 0, 0);
         }
 
         if (selection.get(2)) {
@@ -214,6 +216,24 @@ public class RenderUtils {
             if (pose != null)
                 part.loadPose(pose);
         }
+    }
+
+    public static Identifier armorTrimTexture(ArmorTrim trim, EquipmentClientInfo.LayerType layerType, EquipmentClientInfo equipmentInfo) {
+        Identifier assetId = trim.pattern().value().assetId();
+        Identifier paletteId = trim.material().value().paletteId();
+
+        for (EquipmentClientInfo.TrimOverride override : equipmentInfo.trimOverrides()) {
+            if (override.predicate().matches(trim)) {
+                assetId = override.textureId().orElse(assetId);
+                paletteId = override.paletteId().orElse(null);
+                break;
+            }
+        }
+
+        Identifier texture = assetId.withPath(path -> layerType.trimAssetPrefix() + "/" + path);
+        return paletteId == null
+                ? texture.withPath(path -> "textures/" + path + ".png")
+                : Minecraft.getInstance().getPalettedTextureManager().getOrPrepare(texture, paletteId).textureLocation();
     }
 
     public static boolean isEntityUpsideDown(LivingEntity livingEntity) {

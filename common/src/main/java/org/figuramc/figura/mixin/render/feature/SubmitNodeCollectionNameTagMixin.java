@@ -1,10 +1,11 @@
 package org.figuramc.figura.mixin.render.feature;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeCollection;
-import net.minecraft.client.renderer.feature.NameTagFeatureRenderer;
+import net.minecraft.client.renderer.feature.TextFeatureRenderer;
 import net.minecraft.client.renderer.feature.phase.SimpleFeatureRenderPhase;
 import net.minecraft.client.renderer.feature.phase.TranslucentFeatureRenderPhase;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -18,13 +19,13 @@ import org.figuramc.figura.config.Configs;
 import org.figuramc.figura.ducks.CameraRenderStateExtension;
 import org.figuramc.figura.lua.api.nameplate.EntityNameplateCustomization;
 import org.figuramc.figura.math.vector.FiguraVec3;
-import org.figuramc.figura.model.rendering.nameplate.NameTagOutlineQueue;
 import org.figuramc.figura.permissions.Permissions;
 import org.figuramc.figura.utils.TextUtils;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -34,8 +35,9 @@ import java.util.List;
 @Mixin(SubmitNodeCollection.class)
 public class SubmitNodeCollectionNameTagMixin {
 
+    @Shadow @Final public SimpleFeatureRenderPhase solid;
     @Shadow @Final public SimpleFeatureRenderPhase nameTags;
-    @Shadow @Final public TranslucentFeatureRenderPhase seeThroughNameTags;
+    @Shadow @Final public TranslucentFeatureRenderPhase seeThrough;
 
     @Inject(method = "submitNameTag", at = @At("HEAD"), cancellable = true)
     private void figura$submitCustomNameTag(PoseStack poseStack, Vec3 vec3, int lightCoords, Component component, boolean isSeeThroughCapable, int rawLight, CameraRenderState cameraRenderState, CallbackInfo ci) {
@@ -66,7 +68,7 @@ public class SubmitNodeCollectionNameTagMixin {
 
         FiguraVec3 pivot = custom.getPivot() != null ? custom.getPivot() : FiguraVec3.of(vec3.x, vec3.y + 0.5, vec3.z);
         poseStack.translate(pivot.x, pivot.y, pivot.z);
-        poseStack.mulPose(cameraRenderState.orientation);
+        poseStack.rotate(cameraRenderState.orientation);
 
         if (custom.getPos() != null) {
             FiguraVec3 pos = custom.getPos();
@@ -80,10 +82,12 @@ public class SubmitNodeCollectionNameTagMixin {
 
         Matrix4f pose = new Matrix4f(poseStack.last().pose());
 
-        int backgroundColorDefault = ARGB.color(mc.gameRenderer.gameRenderState().optionsRenderState.getBackgroundOpacity(0.25f), -16777216);
+        float backgroundOpacity = mc.gameRenderer.gameRenderState().optionsRenderState.getBackgroundOpacity(0.25f);
+        int backgroundColorDefault = ARGB.color(backgroundOpacity, -16777216);
         int backgroundColor = custom.background != null ? custom.background : backgroundColorDefault;
+        int textColor = ARGB.color(Math.max((backgroundOpacity + 0.75f) * 0.5f, 0.5f), -1);
         int light = custom.light != null ? custom.light : rawLight;
-        int outlineColor = (custom.outlineColor != null ? custom.outlineColor : 0x202020) | 0xFF000000;
+        int outlineColor = custom.outline ? (custom.outlineColor != null ? custom.outlineColor : 0x202020) | 0xFF000000 : 0;
 
         boolean deadmau = component.getString().equals("deadmau5");
         List<Component> lines = isRenderingName ? TextUtils.splitText(component, "\n") : List.of(component);
@@ -97,19 +101,36 @@ public class SubmitNodeCollectionNameTagMixin {
             float x = -font.width(line) / 2f;
             float y = (deadmau ? -10f : 0f) + (font.lineHeight + 1) * lineFromBottom;
 
-            if (custom.outline)
-                NameTagOutlineQueue.ENTRIES.add(new NameTagOutlineQueue.Entry(pose, x, y, line, light, outlineColor));
-
-            Font.DisplayMode mainDisplayMode = custom.outline ? Font.DisplayMode.POLYGON_OFFSET : Font.DisplayMode.NORMAL;
-
             if (isSeeThroughCapable) {
-                nameTags.submit(new NameTagFeatureRenderer.Submit(pose, x, y, line, LightCoordsUtil.lightCoordsWithEmission(light, 2), -1, 0, mainDisplayMode));
-                seeThroughNameTags.submit(new NameTagFeatureRenderer.Submit(pose, x, y, line, light, -2130706433, backgroundColor, Font.DisplayMode.SEE_THROUGH));
+                figura$submitNameTagPart(figura$nameTag(pose, x, y, line, LightCoordsUtil.lightCoordsWithEmission(light, 2), -1, 0, outlineColor, Font.DisplayMode.NORMAL));
+                seeThrough.submit(figura$nameTag(pose, x, y, line, light, textColor, backgroundColor, 0, Font.DisplayMode.SEE_THROUGH));
             } else {
-                nameTags.submit(new NameTagFeatureRenderer.Submit(pose, x, y, line, light, -2130706433, backgroundColor, mainDisplayMode));
+                figura$submitNameTagPart(figura$nameTag(pose, x, y, line, light, textColor, backgroundColor, outlineColor, Font.DisplayMode.NORMAL));
             }
         }
 
         poseStack.popPose();
+    }
+
+    @Unique
+    private static TextFeatureRenderer.Submit figura$nameTag(Matrix4f pose, float x, float y, Component text, int lightCoords, int color, int backgroundColor, int outlineColor, Font.DisplayMode displayMode) {
+        TextFeatureRenderer.Content content = new TextFeatureRenderer.Content.Text(x, y, text.getVisualOrderText(), false, color, backgroundColor, outlineColor);
+        return new TextFeatureRenderer.Submit(pose, displayMode, lightCoords, content);
+    }
+
+    @Unique
+    private void figura$submitNameTagPart(TextFeatureRenderer.Submit submit) {
+        if (figura$canRenderAsSolid(submit.content()))
+            solid.submit(submit);
+        else
+            nameTags.submit(submit);
+    }
+
+    @Unique
+    private static boolean figura$canRenderAsSolid(TextFeatureRenderer.Content content) {
+        return content instanceof TextFeatureRenderer.Content.Text text
+                && ARGB.alpha(text.color()) == 255
+                && ARGB.alpha(text.backgroundColor()) == 0
+                && RenderSystem.isRenderingLevel;
     }
 }

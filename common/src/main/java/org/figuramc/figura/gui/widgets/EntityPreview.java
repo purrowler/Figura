@@ -1,5 +1,6 @@
 package org.figuramc.figura.gui.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -128,7 +129,7 @@ public class EntityPreview extends AbstractContainerElement {
 
         switch (button) {
             // left click - rotate
-            case 0 -> {
+            case InputConstants.MOUSE_BUTTON_LEFT -> {
                 // set anchor rotation
 
                 // get starter mouse pos
@@ -144,7 +145,7 @@ public class EntityPreview extends AbstractContainerElement {
             }
 
             // right click - move
-            case 1 -> {
+            case InputConstants.MOUSE_BUTTON_RIGHT -> {
                 // get starter mouse pos
                 dragDeltaX = (float) mouseX;
                 dragDeltaY = (float) mouseY;
@@ -158,7 +159,7 @@ public class EntityPreview extends AbstractContainerElement {
             }
 
             // middle click - reset pos
-            case 2 -> {
+            case InputConstants.MOUSE_BUTTON_MIDDLE -> {
                 isRotating = false;
                 isDragging = false;
                 anchorX = 0f;
@@ -182,13 +183,13 @@ public class EntityPreview extends AbstractContainerElement {
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
         int button = mouseButtonEvent.button();
         // left click - stop rotating
-        if (button == 0) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) {
             isRotating = false;
             return true;
         }
 
         // right click - stop dragging
-        else if (button == 1) {
+        else if (button == InputConstants.MOUSE_BUTTON_RIGHT) {
             isDragging = false;
             return true;
         }

@@ -1,16 +1,18 @@
 package org.figuramc.figura.gui;
 
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.textures.*;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.textures.*;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.Projection;
@@ -26,6 +28,7 @@ import org.figuramc.figura.utils.ui.UIHelper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 
 public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortraitRenderState> {
@@ -64,8 +67,6 @@ public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortr
         if (pictureInPictureRenderState.avatar() != null) {
             prepareTexturesAndProjectionForAvatar(pictureInPictureRenderState.avatar(), j, k);
             TextureEntry textureEntry = avatarToTexture.get(pictureInPictureRenderState.avatar());
-            RenderSystem.outputColorTextureOverride = textureEntry.textureView;
-            RenderSystem.outputDepthTextureOverride = textureEntry.depthTextureView;
             PoseStack poseStack = new PoseStack();
             float translateY = this.getTranslateY(k, i);
             poseStack.translate(j / 2.0F, translateY, 0.0F);
@@ -76,13 +77,16 @@ public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortr
             if (renderer != null) renderer.beginRender();
             try {
                 this.renderToTexture(pictureInPictureRenderState, poseStack, sns);
-                featureRenderDispatcher.renderAllFeatures(sns);
+                try (FeatureRenderDispatcher.PreparedFrame frame = featureRenderDispatcher.prepareFrame(sns);
+                     RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                             () -> "Figura Portrait", textureEntry.textureView, Optional.empty(), textureEntry.depthTextureView, OptionalDouble.empty())) {
+                    RenderSystem.bindDefaultUniforms(renderPass);
+                    FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
+                }
             } finally {
                 if (renderer != null) renderer.endRender();
             }
 
-            RenderSystem.outputColorTextureOverride = null;
-            RenderSystem.outputDepthTextureOverride = null;
             this.blitTexture(pictureInPictureRenderState, guiRenderState);
         }
         else
@@ -104,8 +108,7 @@ public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortr
             entry.depthTexture.close();
             entry.depthTexture = null;
             entry.depthTextureView.close();
-            entry.sampler.close();
-            entry.sampler = null;
+            entry.depthTextureView = null;
         }
 
         GpuDevice gpuDevice = RenderSystem.getDevice();
@@ -114,7 +117,6 @@ public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortr
             entry.textureView = gpuDevice.createTextureView(entry.texture);
             entry.depthTexture = gpuDevice.createTexture(() -> "UI " + this.getTextureLabel() + " depth texture " + avatar.name, 9, GpuFormat.D32_FLOAT, i, j, 1, 1);
             entry.depthTextureView = gpuDevice.createTextureView(entry.depthTexture);
-            entry.sampler = gpuDevice.createSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.NEAREST, FilterMode.NEAREST, 1, OptionalDouble.empty());
         }
 
         gpuDevice.createCommandEncoder().clearColorAndDepthTextures(entry.texture, new org.joml.Vector4f(0f, 0f, 0f, 0f), entry.depthTexture, 0.0);
@@ -130,7 +132,7 @@ public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortr
             guiRenderState.addBlitToCurrentLayer(
                     new BlitRenderState(
                             RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
-                            TextureSetup.singleTexture(entry.textureView, entry.sampler),
+                            TextureSetup.singleTexture(entry.textureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST)),
                             pictureInPictureRenderState.pose(),
                             pictureInPictureRenderState.x0(),
                             pictureInPictureRenderState.y0(),
@@ -238,7 +240,6 @@ public class FiguraPortraitRenderer extends PictureInPictureRenderer<FiguraPortr
         private GpuTextureView textureView;
         private GpuTexture depthTexture;
         private GpuTextureView depthTextureView;
-        private GpuSampler sampler;
 
         @Override
         public boolean equals(Object obj) {

@@ -1,5 +1,6 @@
 package org.figuramc.figura.gui.screens;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -242,7 +243,7 @@ public class PermissionsScreen extends AbstractPanelScreen {
 
         double mouseX = mouseButtonEvent.x();
         double mouseY = mouseButtonEvent.y();
-        if (mouseButtonEvent.button() == 0 && playerList.selectedEntry instanceof PlayerPermPackElement element && element.isMouseOver(mouseX, mouseY)) {
+        if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT && playerList.selectedEntry instanceof PlayerPermPackElement element && element.isMouseOver(mouseX, mouseY)) {
             dragged = element;
             element.anchorX = (int) mouseX;
             element.anchorY = (int) mouseY;

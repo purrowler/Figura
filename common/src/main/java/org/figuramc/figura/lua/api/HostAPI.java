@@ -1,11 +1,11 @@
 package org.figuramc.figura.lua.api;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.multiplayer.chat.GuiMessageSource;
@@ -39,7 +39,6 @@ import org.figuramc.figura.lua.docs.LuaMethodDoc;
 import org.figuramc.figura.lua.docs.LuaMethodOverload;
 import org.figuramc.figura.lua.docs.LuaTypeDoc;
 import org.figuramc.figura.math.vector.FiguraVec3;
-import org.figuramc.figura.mixin.LivingEntityAccessor;
 import org.figuramc.figura.mixin.gui.ChatComponentAccessor;
 import org.figuramc.figura.mixin.gui.ChatScreenAccessor;
 import org.figuramc.figura.model.rendering.texture.FiguraTexture;
@@ -324,7 +323,10 @@ public class HostAPI {
     )
     public HostAPI swingArm(boolean offhand) {
         if (isHost() && this.minecraft.player != null)
-            this.minecraft.player.swing(offhand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
+        {
+            InteractionHand hand = offhand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+            this.minecraft.player.swing(hand, this.minecraft.player.getItemInHand(hand).getInteractAnimation(), false);
+        }
         return this;
     }
 
@@ -521,7 +523,7 @@ public class HostAPI {
                 .createBuffer(() -> "Figura Screenshot buffer", 9, width * height * gpuTexture.getFormat().blockSize());
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
         RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {
-            try (com.mojang.blaze3d.buffers.GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
+            try (com.mojang.renderpearl.api.buffers.GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
                 for (int k = 0; k < height; k++) {
                     for (int l = 0; l < width; l++) {
                         int m = readView.data().getInt((l + k * width) * gpuTexture.getFormat().blockSize());
@@ -601,7 +603,7 @@ public class HostAPI {
     public boolean isJumping() {
         LocalPlayer player = this.minecraft.player;
         if (isHost() && player != null)
-            return ((LivingEntityAccessor) player).isJumping();
+            return player.isJumping();
         return false;
     }
 

@@ -696,9 +696,9 @@ public class Avatar {
 
         stack.pushPose();
         if (!config) {
-            stack.mulPose(Axis.ZP.rotation(arm.zRot));
-            stack.mulPose(Axis.YP.rotation(arm.yRot));
-            stack.mulPose(Axis.XP.rotation(arm.xRot));
+            stack.rotate(Axis.ZP.rotation(arm.zRot));
+            stack.rotate(Axis.YP.rotation(arm.yRot));
+            stack.rotate(Axis.XP.rotation(arm.xRot));
         }
         render(player, 0f, tickDelta, 1f, stack, submitNodeCollector, light, OverlayTexture.NO_OVERLAY, playerModel, filter, false, false);
         stack.popPose();
@@ -869,7 +869,7 @@ public class Avatar {
         Quaternionf quaternionf = Axis.XP.rotationDegrees(135f);
         Quaternionf quaternionf2 = Axis.YP.rotationDegrees(-90f);
         quaternionf.mul(quaternionf2);
-        stack.mulPose(quaternionf);
+        stack.rotate(quaternionf);
 
         renderer.setupRenderer(
                 PartFilterScheme.ARROW, submitNodeCollector, stack,
@@ -891,7 +891,7 @@ public class Avatar {
         Quaternionf quaternionf = Axis.ZP.rotationDegrees(90f);
         Quaternionf quaternionf2 = Axis.YP.rotationDegrees(90f);
         quaternionf.mul(quaternionf2);
-        stack.mulPose(quaternionf);
+        stack.rotate(quaternionf);
 
         renderer.setupRenderer(
                 PartFilterScheme.TRIDENT, submitNodeCollector, stack,
@@ -914,7 +914,7 @@ public class Avatar {
             return false;
 
         stack.pushPose();
-        stack.mulPose(Axis.ZP.rotationDegrees(180f));
+        stack.rotate(Axis.ZP.rotationDegrees(180f));
 
         renderer.setupRenderer(
                 PartFilterScheme.ITEM, submitNodeCollector, stack,

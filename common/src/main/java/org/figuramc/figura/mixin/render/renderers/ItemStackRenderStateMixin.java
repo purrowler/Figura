@@ -2,6 +2,7 @@ package org.figuramc.figura.mixin.render.renderers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -66,8 +67,9 @@ public class ItemStackRenderStateMixin implements FiguraItemStackRenderStateExte
     @Override
     public List<BakedQuad> figura$getQuads() {
         for (ItemStackRenderState.LayerRenderState layerRenderState : layers) {
-            if (((ItemStackRenderState$LayerRenderStateAccessor)layerRenderState).figura$getQuads() != null)
-                return ((ItemStackRenderState$LayerRenderStateAccessor)layerRenderState).figura$getQuads();
+            ItemQuads quads = ((ItemStackRenderState$LayerRenderStateAccessor)layerRenderState).figura$getQuads();
+            if (quads != null)
+                return quads.all();
         }
         return List.of();
     }

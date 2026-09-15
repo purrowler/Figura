@@ -79,6 +79,7 @@ processResources {
     properties.put("version", project.jarVersion)
     properties.put("java_version", rootProject.java_version)
     properties.put("minecraft_version", rootProject.minecraft_version)
+    properties.put("minecraft_dependency", rootProject.minecraft_dependency)
     properties.put("assets_version", rootProject.assets_version)
 
     properties.forEach((k, v) -> inputs.property(k, v.toString()))

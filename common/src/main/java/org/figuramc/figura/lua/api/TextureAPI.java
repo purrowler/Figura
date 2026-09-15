@@ -1,10 +1,10 @@
 package org.figuramc.figura.lua.api;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -102,7 +102,7 @@ public class TextureAPI {
 
         try {
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-            image = NativeImage.read(NativeImage.Format.RGBA, bais);
+            image = NativeImage.read(bais);
             bais.close();
         } catch (Exception e) {
             throw new LuaError("Could not read image: " + e.getMessage());
@@ -168,7 +168,7 @@ public class TextureAPI {
             CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
             GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Atlas Read Buffer", 9, width * height * atlasGpuTexture.getFormat().blockSize());
             encoder.copyTextureToBuffer(atlasGpuTexture, gpuBuffer, 0, () -> {
-                try (com.mojang.blaze3d.buffers.GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
+                try (com.mojang.renderpearl.api.buffers.GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
                     for (int k = 0; k < height; k++) {
                         for (int l = 0; l < width; l++) {
                             int m = readView.data().getInt((l + k * width) * atlasGpuTexture.getFormat().blockSize());
@@ -183,7 +183,7 @@ public class TextureAPI {
         try {
             Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(resourceLocation);
             // if the string is a valid resourceLocation but does not point to a valid resource, missingno
-            NativeImage image = resource.isPresent() ? NativeImage.read(NativeImage.Format.RGBA, resource.get().open()) : MissingTextureAtlasSpriteAccessor.generateImage(16, 16);
+            NativeImage image = resource.isPresent() ? NativeImage.read(resource.get().open()) : MissingTextureAtlasSpriteAccessor.generateImage(16, 16);
             return register(name, image, false);
         } catch (Exception e) {
             // spit an error if the player inputs a resource location that does point to a thing, but not to an image

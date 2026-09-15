@@ -2,11 +2,11 @@ package org.figuramc.figura.model.rendering.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
-import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.GpuFormat;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.GpuFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.MipmapStrategy;
 import net.minecraft.client.renderer.texture.SimpleTexture;
@@ -75,7 +75,7 @@ public class FiguraTexture extends SimpleTexture {
             ByteBuffer wrapper = BufferUtils.createByteBuffer(data.length);
             wrapper.put(data);
             wrapper.rewind();
-            image = NativeImage.read(NativeImage.Format.RGBA, wrapper);
+            image = NativeImage.read(wrapper);
         } catch (IOException e) {
             FiguraMod.LOGGER.error("", e);
             image = new NativeImage(1, 1, true);

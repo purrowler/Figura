@@ -1,10 +1,11 @@
 package org.figuramc.figura.gui;
 
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.textures.*;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.textures.*;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
@@ -13,9 +14,10 @@ import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.gui.BlitRenderState;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 
-import java.util.OptionalDouble;
+import java.util.Optional;
 
 public class FiguraGuiRenderer extends PictureInPictureRenderer<FiguraGuiRenderState> {
 
@@ -23,7 +25,6 @@ public class FiguraGuiRenderer extends PictureInPictureRenderer<FiguraGuiRenderS
     private GpuTextureView textureView;
     private GpuTexture depthTexture;
     private GpuTextureView depthTextureView;
-    private GpuSampler sampler;
 
     private final ProjectionMatrixBuffer projectionMatrixBuffer = new ProjectionMatrixBuffer(
             "GUI-PIP - " + this.getClass().getSimpleName()
@@ -70,8 +71,6 @@ public class FiguraGuiRenderer extends PictureInPictureRenderer<FiguraGuiRenderS
             depthTexture = null;
             depthTextureView.close();
             depthTextureView = null;
-            sampler.close();
-            sampler = null;
         }
 
         if (texture == null) {
@@ -83,11 +82,6 @@ public class FiguraGuiRenderer extends PictureInPictureRenderer<FiguraGuiRenderS
                     () -> "UI Figura GUI depth texture", 9, GpuFormat.D32_FLOAT, pixelW, pixelH, 1, 1
             );
             depthTextureView = gpuDevice.createTextureView(depthTexture);
-            sampler = gpuDevice.createSampler(
-                    AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE,
-                    FilterMode.NEAREST, FilterMode.NEAREST,
-                    1, OptionalDouble.empty()
-            );
         }
 
         gpuDevice.createCommandEncoder().clearColorAndDepthTextures(texture, new org.joml.Vector4f(0f, 0f, 0f, 0f), depthTexture, 0.0);
@@ -97,21 +91,20 @@ public class FiguraGuiRenderer extends PictureInPictureRenderer<FiguraGuiRenderS
                 projectionMatrixBuffer.getBuffer(projection), ProjectionType.ORTHOGRAPHIC
         );
 
-        RenderSystem.outputColorTextureOverride = textureView;
-        RenderSystem.outputDepthTextureOverride = depthTextureView;
-
         net.minecraft.client.renderer.SubmitNodeStorage sns = ((org.figuramc.figura.mixin.gui.PictureInPictureRendererAccessor) this).figura$getSubmitNodeStorage();
         org.figuramc.figura.model.rendering.FiguraRenderer renderer = state.avatar() == null ? null : state.avatar().renderer;
         if (renderer != null) renderer.beginRender();
         try {
             renderToTexture(state, new PoseStack(), sns);
-            featureRenderDispatcher.renderAllFeatures(sns);
+            try (FeatureRenderDispatcher.PreparedFrame frame = featureRenderDispatcher.prepareFrame(sns);
+                 RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                         () -> "Figura GUI", textureView, Optional.empty(), depthTextureView, java.util.OptionalDouble.empty())) {
+                RenderSystem.bindDefaultUniforms(renderPass);
+                FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
+            }
         } finally {
             if (renderer != null) renderer.endRender();
         }
-
-        RenderSystem.outputColorTextureOverride = null;
-        RenderSystem.outputDepthTextureOverride = null;
 
         blitTexture(state, guiRenderState);
     }
@@ -122,7 +115,7 @@ public class FiguraGuiRenderer extends PictureInPictureRenderer<FiguraGuiRenderS
         guiRenderState.addBlitToCurrentLayer(
                 new BlitRenderState(
                         RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
-                        TextureSetup.singleTexture(textureView, sampler),
+                        TextureSetup.singleTexture(textureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST)),
                         state.pose(),
                         state.x0(), state.y0(), state.x1(), state.y1(),
                         0.0F, 1.0F, 1.0F, 0.0F,
@@ -140,7 +133,6 @@ public class FiguraGuiRenderer extends PictureInPictureRenderer<FiguraGuiRenderS
             textureView.close();
             depthTexture.close();
             depthTextureView.close();
-            sampler.close();
         }
         super.close();
     }

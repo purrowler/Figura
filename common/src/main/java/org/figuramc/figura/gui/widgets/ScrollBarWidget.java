@@ -1,5 +1,6 @@
 package org.figuramc.figura.gui.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -49,7 +50,7 @@ public class ScrollBarWidget extends AbstractWidget implements FiguraWidget {
         if (!this.isActive() || !this.isHoveredOrFocused() || !this.isMouseOver(mouseButtonEvent.x(), mouseButtonEvent.y()))
             return false;
 
-        if (mouseButtonEvent.button() == 0) {
+        if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             double mouseX = mouseButtonEvent.x();
             double mouseY = mouseButtonEvent.y();
             // jump to pos when not clicking on head
@@ -70,7 +71,7 @@ public class ScrollBarWidget extends AbstractWidget implements FiguraWidget {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (mouseButtonEvent.button() == 0 && isScrolling) {
+        if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT && isScrolling) {
             isScrolling = false;
             return true;
         }

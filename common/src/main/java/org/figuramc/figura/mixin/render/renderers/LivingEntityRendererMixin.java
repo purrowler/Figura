@@ -91,7 +91,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     @ModifyArg(
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"
+                    target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/texture/UvMapping;I)V"
             ),
             method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
             index = 5
@@ -100,7 +100,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
         return LivingEntityRendererAccessor.overrideOverlay.orElse(thing);
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V", shift = At.Shift.BEFORE), method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", cancellable = true)
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/texture/UvMapping;I)V", shift = At.Shift.BEFORE), method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", cancellable = true)
     private void setFiguraCallbacks(S livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
         if (currentAvatar == null)
             return;
@@ -208,19 +208,22 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             FiguraMod.popPushProfiler("renderEvent");
             avatar.renderEvent(tickDelta, poseMatrix);
 
-            if (avatar.renderer != null)
-                avatar.renderer.outlineColor = livingEntityState.outlineColor;
+            var localRenderer = avatar.renderer;
+            if (localRenderer != null) {
+                localRenderer.outlineColor = livingEntityState.outlineColor;
+                for (var queue : localRenderer.pivotCustomizations.values())
+                    queue.clear();
+            }
             avatar.render(entity, livingEntityState.yRot, tickDelta, translucent ? 0.15f : 1f, poseStack2, bufferSource, livingEntityState.lightCoords, overlay, model, filter, translucent, glowing);
 
             // Submit deferred items using fresh pivot transforms from commonRender()
             FiguraMod.popPushProfiler("deferredItems");
-            var localRenderer = avatar.renderer;
             if (localRenderer != null) {
                 for (var deferredItem : localRenderer.deferredItems) {
                     avatar.pivotPartRender(deferredItem.pivotType(), stack -> {
                         final float s = 16f;
                         stack.scale(s, s, s);
-                        stack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-90f));
+                        stack.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90f));
 
                         var ext = (FiguraItemStackRenderStateExtension) deferredItem.renderState();
                         ItemTransform transform = ext.figura$getItemTransform();

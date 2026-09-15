@@ -197,8 +197,8 @@ public abstract class HumanoidArmorLayerMixinFabric<S extends HumanoidRenderStat
     @Unique
     private void figura$prepareArmorRender(PoseStack stack) {
         stack.scale(16, 16, 16);
-        stack.mulPose(Axis.XP.rotationDegrees(180f));
-        stack.mulPose(Axis.YP.rotationDegrees(180f));
+        stack.rotate(Axis.XP.rotationDegrees(180f));
+        stack.rotate(Axis.YP.rotationDegrees(180f));
     }
 
     @Unique
@@ -292,7 +292,8 @@ public abstract class HumanoidArmorLayerMixinFabric<S extends HumanoidRenderStat
         if (location.isEmpty())
             return;
 
-        List<EquipmentClientInfo.Layer> list = ((EquipmentLayerRendererAccessor)this.equipmentRenderer).figura$getAssetsManager().get(location.get()).getLayers(layerType);
+        EquipmentClientInfo equipmentInfo = ((EquipmentLayerRendererAccessor)this.equipmentRenderer).figura$getAssetsManager().get(location.get());
+        List<EquipmentClientInfo.Layer> list = equipmentInfo.getLayers(layerType);
 
         int i = DyedItemColor.getOrDefault(itemStack, 0);
         int order = 0;
@@ -305,20 +306,18 @@ public abstract class HumanoidArmorLayerMixinFabric<S extends HumanoidRenderStat
 
             if (k != 0) {
                 Identifier normalArmorResource = ((EquipmentLayerRendererAccessor)this.equipmentRenderer).layerTextureLookup().apply(new EquipmentLayerRenderer.LayerTextureKey(layerType, layer));
-                nodeCollector.order(order++).submitModel(partModel, pose, poseStack, RenderTypes.armorCutoutNoCull(normalArmorResource), light, OverlayTexture.NO_OVERLAY, k, null, 0, null);
-                if (hasGlint)
-                    nodeCollector.order(order++).submitModel(partModel, pose, poseStack, RenderTypes.armorEntityGlint(), light, OverlayTexture.NO_OVERLAY, k, null, 0, null);
+                RenderType armorRenderType = hasGlint ? RenderTypes.armorCutoutNoCullGlint(normalArmorResource) : RenderTypes.armorCutoutNoCull(normalArmorResource);
+                nodeCollector.order(order++).submitModel(partModel, pose, poseStack, armorRenderType, light, OverlayTexture.NO_OVERLAY, k, null, 0);
                 hasGlint = false;
             }
         }
 
         ArmorTrim trim = itemStack.get(DataComponents.TRIM);
         if (trim != null) {
-            TextureAtlasSprite textureAtlasSprite = ((EquipmentLayerRendererAccessor)equipmentRenderer).trimSpriteLookup()
-                    .apply(new EquipmentLayerRenderer.TrimSpriteKey(trim, layerType, location.get()));
+            Identifier trimTexture = RenderUtils.armorTrimTexture(trim, layerType, equipmentInfo);
 
-            RenderType renderType = Sheets.armorTrimsSheet(trim.pattern().value().decal());
-            nodeCollector.order(order).submitModel(partModel, pose, poseStack, renderType, light, OverlayTexture.NO_OVERLAY, -1, textureAtlasSprite, 0, null);
+            RenderType renderType = RenderTypes.armorTrim(trimTexture, trim.pattern().value().decal());
+            nodeCollector.order(order).submitModel(partModel, pose, poseStack, renderType, light, OverlayTexture.NO_OVERLAY, -1, null, 0);
         }
     }
 

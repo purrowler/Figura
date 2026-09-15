@@ -4,7 +4,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.blaze3d.resource.CrossFrameResourcePool;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
@@ -13,8 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelTargetBundle;
-import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
@@ -32,7 +29,6 @@ import org.figuramc.figura.math.matrix.FiguraMat4;
 import org.figuramc.figura.math.vector.FiguraVec3;
 import org.figuramc.figura.utils.EntityUtils;
 import org.figuramc.figura.utils.RenderUtils;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
@@ -49,17 +45,9 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
     @Shadow @Final
     private Minecraft minecraft;
 
-    @Shadow private boolean effectActive;
-
     @Shadow public abstract void checkEntityPostEffect(Entity entity);
 
-    @Shadow @Final private Camera mainCamera;
-    @Shadow @Nullable
-    private Identifier postEffectId;
-
-    @Shadow @Final private CrossFrameResourcePool resourcePool;
-    @Shadow private float spinningEffectTime;
-    @Shadow private float spinningEffectSpeed;
+    @Shadow @Final private List<Identifier> requestedPostEffects;
     @Shadow @Final private GuiRenderer guiRenderer;
     @Shadow @Final private GameRenderState gameRenderState;
     @Shadow @Final private net.minecraft.client.renderer.SubmitNodeStorage handAndScreenSubmitNodeStorage;
@@ -70,7 +58,7 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
     private boolean hasShaders;
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
-    private void onRenderLevel(DeltaTracker deltaTracker, CallbackInfo ci) {
+    private void onRenderLevel(CallbackInfo ci) {
         hasShaders = ClientAPI.hasShaderPack();
 
         CameraRenderState cameraRenderState = this.gameRenderState.levelRenderState.cameraRenderState;
@@ -102,19 +90,12 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
         instance.mul(original);
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;doEntityOutline()V", shift = At.Shift.AFTER))
-    private void render(DeltaTracker deltaTracker, boolean tick, CallbackInfo ci) {
+    @Inject(method = "update", at = @At("RETURN"))
+    private void figura$requestAvatarPostEffect(DeltaTracker deltaTracker, CallbackInfo ci) {
         Entity entity = this.minecraft.getCameraEntity();
         Avatar avatar = AvatarManager.getAvatar(entity);
-        if (!RenderUtils.vanillaModelAndScript(avatar)) {
-            if (avatarPostShader) {
-                avatarPostShader = false;
-                this.checkEntityPostEffect(entity);
-            }
-            return;
-        }
+        Identifier resource = RenderUtils.vanillaModelAndScript(avatar) ? avatar.luaRuntime.renderer.postShader : null;
 
-        Identifier resource = avatar.luaRuntime.renderer.postShader;
         if (resource == null) {
             if (avatarPostShader) {
                 avatarPostShader = false;
@@ -123,18 +104,8 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
             return;
         }
 
-        try {
-            avatarPostShader = true;
-            this.effectActive = true;
-            if (this.postEffectId == null || !this.postEffectId.equals(resource)) {
-                PostChain postchain = this.minecraft.getShaderManager().getPostChain(resource, LevelTargetBundle.MAIN_TARGETS);
-                if (postchain != null)
-                    postchain.process(this.minecraft.gameRenderer.mainRenderTarget(), this.resourcePool);
-            }
-        } catch (Exception ignored) {
-            this.effectActive = false;
-            avatar.luaRuntime.renderer.postShader = null;
-        }
+        avatarPostShader = true;
+        this.requestedPostEffects.add(resource);
     }
 
     @Inject(method = "checkEntityPostEffect", at = @At("HEAD"), cancellable = true)

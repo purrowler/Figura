@@ -1,5 +1,6 @@
 package org.figuramc.figura.gui.screens;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -156,7 +157,7 @@ public abstract class AbstractPanelScreen extends Screen {
             setFocused(widget);
 
         if (widget != null) {
-            if (mouseButtonEvent.button() == 0) this.setDragging(true);
+            if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT) this.setDragging(true);
             return true;
         }
 

@@ -72,16 +72,7 @@ public class TextTask extends RenderTask {
             int offset = alignment.apply(cacheWidth);
             float x1 = -1 - offset;
             float x2 = cacheWidth - offset;
-            final int bgColor = bg;
-            final int bgLight = l;
-            final float vo = vertexOffset;
-            submitNodeCollector.submitCustomGeometry(poseStack, seeThrough ? RenderTypes.textBackgroundSeeThrough() : RenderTypes.textBackground(), (pose, vertexConsumer) -> {
-                Matrix4f m = pose.pose();
-                vertexConsumer.addVertex(m, x1, -1f, vo).setColor(bgColor).setLight(bgLight);
-                vertexConsumer.addVertex(m, x1, cacheHeight, vo).setColor(bgColor).setLight(bgLight);
-                vertexConsumer.addVertex(m, x2, cacheHeight, vo).setColor(bgColor).setLight(bgLight);
-                vertexConsumer.addVertex(m, x2, -1f, vo).setColor(bgColor).setLight(bgLight);
-            });
+            submitNodeCollector.submitTextBackground(poseStack, x1, -1f, x2, cacheHeight, bg, displayMode, l);
         }
 
         // text

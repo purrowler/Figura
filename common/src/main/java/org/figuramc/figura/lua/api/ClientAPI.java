@@ -197,10 +197,10 @@ public class ClientAPI {
     @LuaWhitelist
     @LuaMethodDoc("client.get_current_effect")
     public static String getCurrentEffect() {
-        if (Minecraft.getInstance().gameRenderer.currentPostEffect() == null)
+        if (Minecraft.getInstance().gameRenderer.spectatedEntityPostEffect() == null)
             return null;
 
-        return Minecraft.getInstance().gameRenderer.currentPostEffect().toString();
+        return Minecraft.getInstance().gameRenderer.spectatedEntityPostEffect().toString();
     }
 
     @LuaWhitelist

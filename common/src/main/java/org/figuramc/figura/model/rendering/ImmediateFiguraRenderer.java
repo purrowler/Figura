@@ -659,7 +659,7 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
         // get render type
         if (id != null) {
             if (translucent) {
-                ret.renderType = RenderTypes.entityTranslucentCullItemTarget(id);
+                ret.renderType = RenderTypes.entityTranslucentCull(id);
                 return ret;
             }
             if (glowing) {

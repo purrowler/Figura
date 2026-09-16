@@ -3,6 +3,7 @@ package org.figuramc.figura.model.rendering.texture;
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -10,8 +11,10 @@ import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.renderpearl.api.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.feature.ItemFeatureRenderer;
+import net.minecraft.client.renderer.oit.OitPipelineSet;
 
 import net.minecraft.client.renderer.rendertype.*;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -98,8 +101,8 @@ public enum FiguraRenderTypes {
         private static final BiFunction<Identifier, Boolean, RenderType> CUTOUT_EMISSIVE_SOLID = Util.memoize(
                 (texture, affectsOutline) ->
                         new RenderType("figura_cutout_emissive_solid",
-                                RenderSetup.builder(RenderPipelines.BEACON_BEAM_TRANSLUCENT)
-                                        
+                                RenderSetup.builder(FiguraRenderPipelines.CUTOUT_EMISSIVE_SOLID)
+                                        .setOitPipelines(FiguraRenderPipelines.OIT_CUTOUT_EMISSIVE_SOLID)
                                         .withTexture("Sampler0", texture)
                                         .affectsCrumbling()
                                         .sortOnUpload()
@@ -175,5 +178,22 @@ public enum FiguraRenderTypes {
         protected static RenderPipeline.Snippet FIGURA_SOLID_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader(new FiguraIdentifier("core/solid")).withFragmentShader(new FiguraIdentifier("core/solid")).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(DepthStencilState.DEFAULT).withCull(false).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_NORMAL).withPrimitiveTopology(com.mojang.renderpearl.api.pipeline.PrimitiveTopology.QUADS).buildSnippet();
 
         public static RenderPipeline FIGURA_SOLID = register(RenderPipeline.builder(FIGURA_SOLID_SNIPPET).withLocation(new FiguraIdentifier("pipeline/solid")).build());
+
+        private static final RenderPipeline.Snippet CUTOUT_EMISSIVE_SOLID_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET)
+                .withVertexShader("core/rendertype_beacon_beam")
+                .withFragmentShader("core/rendertype_beacon_beam")
+                .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
+                .withVertexBinding(0, DefaultVertexFormat.BLOCK)
+                .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                .withDepthStencilState(DepthStencilState.DEFAULT)
+                .withCull(false)
+                .buildSnippet();
+
+        public static final RenderPipeline CUTOUT_EMISSIVE_SOLID = register(RenderPipeline.builder(CUTOUT_EMISSIVE_SOLID_SNIPPET)
+                .withLocation(new FiguraIdentifier("pipeline/cutout_emissive_solid"))
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                .build());
+
+        public static final OitPipelineSet OIT_CUTOUT_EMISSIVE_SOLID = OitPipelineSet.builder("figura_cutout_emissive_solid", RenderPipeline.builder(CUTOUT_EMISSIVE_SOLID_SNIPPET)).build();
     }
 }

@@ -146,7 +146,7 @@ public class LivingEntityAPI<T extends LivingEntity> extends EntityAPI<T> {
     @LuaMethodDoc("living_entity.get_swing_time")
     public int getSwingTime() {
       checkEntity();
-      return ((SwingStateAccessor) ((LivingEntityAccessor) entity).getSwingState()).figura$getTicks();
+      return entity.isSwinging() ? ((SwingStateAccessor) ((LivingEntityAccessor) entity).getSwingState()).figura$getTicks() : 0;
     }
 
     @LuaWhitelist

@@ -82,10 +82,18 @@ public class FiguraKeybind {
 
     public static InputConstants.Key parseStringKey(String key) {
         try {
-            return InputConstants.getKey(key);
+            return InputConstants.getKey(toSdlMouseKeyName(key));
         } catch (Exception passed) {
             throw new LuaError("Invalid key: " + key);
         }
+    }
+
+    private static String toSdlMouseKeyName(String key) {
+        return switch (key) {
+            case "key.mouse.2" -> "key.mouse.right";
+            case "key.mouse.3" -> "key.mouse.middle";
+            default -> key;
+        };
     }
 
     public static boolean set(List<FiguraKeybind> bindings, InputConstants.Key key, boolean pressed, int modifiers) {

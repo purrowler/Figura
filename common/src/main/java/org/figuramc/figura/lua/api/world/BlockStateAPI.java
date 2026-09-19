@@ -68,7 +68,7 @@ public class BlockStateAPI {
         this.id = BuiltInRegistries.BLOCK.getKey(blockstate.getBlock()).toString();
 
         CompoundTag tag = NbtUtils.writeBlockState(blockstate);
-        this.properties = new ReadOnlyLuaTable(tag.contains("Properties") ? NbtToLua.convert(tag.get("Properties")) : new LuaTable());
+        this.properties = new ReadOnlyLuaTable(tag.contains("properties") ? NbtToLua.convert(tag.get("properties")) : new LuaTable());
     }
 
     protected BlockPos getBlockPos() {

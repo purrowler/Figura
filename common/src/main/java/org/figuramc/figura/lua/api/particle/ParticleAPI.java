@@ -1,6 +1,7 @@
 package org.figuramc.figura.lua.api.particle;
 
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -39,10 +40,25 @@ public class ParticleAPI {
         return (ParticleEngineAccessor) Minecraft.getInstance().particleEngine;
     }
 
+    private ParticleOptions parse(String id) throws CommandSyntaxException {
+        id = convertOldToNewParticleFormat(id);
+        HolderLookup.Provider registries = WorldAPI.getCurrentWorld().registryAccess();
+        try {
+            return ParticleArgument.readParticle(new StringReader(id), registries);
+        } catch (CommandSyntaxException e) {
+            if (id.contains("{"))
+                throw e;
+            try {
+                return ParticleArgument.readParticle(new StringReader(id + "{color:[1.0,1.0,1.0,1.0]}"), registries);
+            } catch (CommandSyntaxException ignored) {
+                throw e;
+            }
+        }
+    }
+
     private LuaParticle generate(String id, double x, double y, double z, double w, double t, double h) {
         try {
-            id = convertOldToNewParticleFormat(id);
-            ParticleOptions options = ParticleArgument.readParticle(new StringReader(id), WorldAPI.getCurrentWorld().registryAccess());
+            ParticleOptions options = parse(id);
             Particle p = getParticleEngine().figura$makeParticle(options, x, y, z, w, t, h);
             if (p == null) throw new LuaError("Could not parse particle \"" + id + "\"");
             return new LuaParticle(id, p, owner);
@@ -265,8 +281,7 @@ public class ParticleAPI {
     )
     public boolean isPresent(String id) {
         try {
-            ParticleOptions options = ParticleArgument.readParticle(new StringReader(id), WorldAPI.getCurrentWorld().registryAccess());
-            return getParticleEngine().figura$makeParticle(options, 0, 0, 0, 0, 0, 0) != null;
+            return getParticleEngine().figura$makeParticle(parse(id), 0, 0, 0, 0, 0, 0) != null;
         } catch (Exception ignored) {
             return false;
         }

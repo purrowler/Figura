@@ -30,6 +30,7 @@ import org.joml.Quaternionf;
 import org.luaj.vm2.LuaError;
 
 import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @LuaWhitelist
@@ -38,6 +39,8 @@ import java.util.function.Function;
         value = "entity_task"
 )
 public class EntityTask extends RenderTask {
+
+    private static final AtomicInteger FAKE_ID = new AtomicInteger();
 
     @Nullable Entity entity;
     long ticksSinceEntity;
@@ -127,7 +130,10 @@ public class EntityTask extends RenderTask {
             }
 
             assert Minecraft.getInstance().level != null;
-            entity = EntityType.loadEntityRecursive(finalNbt, Minecraft.getInstance().level, new net.minecraft.world.entity.EntitySpawnRequest(EntitySpawnReason.SPAWN_ITEM_USE, false), EntityProcessor.NOP);
+            entity = EntityType.loadEntityRecursive(finalNbt, Minecraft.getInstance().level, new net.minecraft.world.entity.EntitySpawnRequest(EntitySpawnReason.SPAWN_ITEM_USE, false), e -> {
+                e.setId(FAKE_ID.decrementAndGet());
+                return e;
+            });
             if (entity == null) {
                 throw new LuaError("Could not create entity");
             }

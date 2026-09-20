@@ -744,6 +744,9 @@ public class Avatar {
             return false;
         renderer.allowPivotParts = false;
 
+        EntityRenderMode prevRenderMode = renderMode;
+        renderMode = EntityRenderMode.RENDER;
+
         renderer.setupRenderer(
                 PartFilterScheme.SKULL, submitNodeCollector, stack,
                 1f, light, 1f, OverlayTexture.NO_OVERLAY,
@@ -756,6 +759,7 @@ public class Avatar {
         // head
         boolean bool = comp > 0 || headRender(stack, submitNodeCollector, light, true);
 
+        renderMode = prevRenderMode;
         renderer.allowPivotParts = true;
         return bool;
     }

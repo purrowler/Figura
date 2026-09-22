@@ -81,7 +81,7 @@ public class TextTask extends RenderTask {
             int x = -alignment.apply(font, text);
 
             if (outline) {
-                submitNodeCollector.submitText(poseStack, x, j, text.getVisualOrderText(), false, displayMode, l, -1, 0, out);
+                submitNodeCollector.submitText(poseStack, x, j, text.getVisualOrderText(), false, Font.DisplayMode.NORMAL, l, -1, 0, out);
                 if (seeThrough)
                     submitNodeCollector.submitText(poseStack, x, j, text.getVisualOrderText(), shadow, displayMode, l, op, 0, 0);
             } else {

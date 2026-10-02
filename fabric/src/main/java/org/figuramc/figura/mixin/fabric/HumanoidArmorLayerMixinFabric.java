@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
+import net.minecraft.client.resources.palette.PalettedTextureManager;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -301,6 +302,11 @@ public abstract class HumanoidArmorLayerMixinFabric<S extends HumanoidRenderStat
         PosedModelPartModel partModel = new PosedModelPartModel(modelPart);
         List<PartPose> pose = partModel.snapshotPose();
 
+        ArmorTrim trim = itemStack.get(DataComponents.TRIM);
+        boolean foil = hasGlint;
+        if (trim != null)
+            hasGlint = false;
+
         for(EquipmentClientInfo.Layer layer : list) {
             int k = EquipmentLayerRendererAccessor.getColorForLayer(layer, i);
 
@@ -312,12 +318,13 @@ public abstract class HumanoidArmorLayerMixinFabric<S extends HumanoidRenderStat
             }
         }
 
-        ArmorTrim trim = itemStack.get(DataComponents.TRIM);
         if (trim != null) {
-            Identifier trimTexture = RenderUtils.armorTrimTexture(trim, layerType, equipmentInfo);
+            PalettedTextureManager.Handle trimTexture = RenderUtils.armorTrimTexture(trim, layerType, equipmentInfo);
 
-            RenderType renderType = RenderTypes.armorTrim(trimTexture, trim.pattern().value().decal());
-            nodeCollector.order(order).submitModel(partModel, pose, poseStack, renderType, light, OverlayTexture.NO_OVERLAY, -1, null, 0);
+            RenderType renderType = RenderTypes.armorTrim(trimTexture.textureLocation(), trim.pattern().value().decal());
+            nodeCollector.order(order++).submitModel(partModel, pose, poseStack, renderType, light, OverlayTexture.NO_OVERLAY, -1, trimTexture, 0);
+            if (foil)
+                nodeCollector.order(order).submitModel(partModel, pose, poseStack, RenderTypes.trimmedArmorGlint(), light, OverlayTexture.NO_OVERLAY, -1, null, 0);
         }
     }
 

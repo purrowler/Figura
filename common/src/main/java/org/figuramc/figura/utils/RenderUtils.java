@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
+import net.minecraft.client.resources.palette.PalettedTextureManager;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -218,7 +219,7 @@ public class RenderUtils {
         }
     }
 
-    public static Identifier armorTrimTexture(ArmorTrim trim, EquipmentClientInfo.LayerType layerType, EquipmentClientInfo equipmentInfo) {
+    public static PalettedTextureManager.Handle armorTrimTexture(ArmorTrim trim, EquipmentClientInfo.LayerType layerType, EquipmentClientInfo equipmentInfo) {
         Identifier assetId = trim.pattern().value().assetId();
         Identifier paletteId = trim.material().value().paletteId();
 
@@ -231,9 +232,25 @@ public class RenderUtils {
         }
 
         Identifier texture = assetId.withPath(path -> layerType.trimAssetPrefix() + "/" + path);
-        return paletteId == null
-                ? texture.withPath(path -> "textures/" + path + ".png")
-                : Minecraft.getInstance().getPalettedTextureManager().getOrPrepare(texture, paletteId).textureLocation();
+        if (paletteId != null)
+            return Minecraft.getInstance().getPalettedTextureManager().getOrPrepare(texture, paletteId);
+        Identifier location = texture.withPath(path -> "textures/" + path + ".png");
+        return new PalettedTextureManager.Handle() {
+            @Override
+            public Identifier textureLocation() {
+                return location;
+            }
+
+            @Override
+            public float getU(float u) {
+                return u;
+            }
+            
+            @Override
+            public float getV(float v) {
+                return v;
+            }
+        };
     }
 
     public static boolean isEntityUpsideDown(LivingEntity livingEntity) {

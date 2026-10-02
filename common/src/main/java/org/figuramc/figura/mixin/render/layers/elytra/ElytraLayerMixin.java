@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
+import net.minecraft.client.resources.palette.PalettedTextureManager;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -204,6 +205,11 @@ public abstract class ElytraLayerMixin<T extends LivingEntity, S extends Humanoi
 
         int i = itemStack.has(net.minecraft.core.component.DataComponents.DYED_COLOR) ? DyedItemColor.getOrDefault(itemStack, -6265536) : -1;
         int order = 0;
+        
+        ArmorTrim trim = itemStack.get(DataComponents.TRIM);
+        boolean foil = hasGlint;
+        if (trim != null)
+            hasGlint = false;
 
         for(EquipmentClientInfo.Layer layer : list) {
             int k = EquipmentLayerRendererAccessor.getColorForLayer(layer, i);
@@ -220,15 +226,21 @@ public abstract class ElytraLayerMixin<T extends LivingEntity, S extends Humanoi
             }
         }
 
-        ArmorTrim trim = itemStack.get(DataComponents.TRIM);
         if (trim != null) {
-            Identifier trimTexture = RenderUtils.armorTrimTexture(trim, layerType, equipmentInfo);
-            RenderType renderType = RenderTypes.armorTrim(trimTexture, trim.pattern().value().decal());
+            PalettedTextureManager.Handle trimTexture = RenderUtils.armorTrimTexture(trim, layerType, equipmentInfo);
+            RenderType renderType = RenderTypes.armorTrim(trimTexture.textureLocation(), trim.pattern().value().decal());
             ((FiguraSubmitCallBackExtension)(Object)modelPart).figura$addPreRenderingCallback((SubmitNodeCollector, stack) -> {
                 elytraModel.setupAnim(state);
                 return true;
             });
-            nodeCollector.order(order).submitModelPart(modelPart, poseStack, renderType, light, OverlayTexture.NO_OVERLAY, null, -1);
+            nodeCollector.order(order++).submitModelPart(modelPart, poseStack, renderType, light, OverlayTexture.NO_OVERLAY, trimTexture, -1);
+            if (foil) {
+                ((FiguraSubmitCallBackExtension)(Object)modelPart).figura$addPreRenderingCallback((SubmitNodeCollector, stack) -> {
+                    elytraModel.setupAnim(state);
+                    return true;
+                });
+                nodeCollector.order(order).submitModelPart(modelPart, poseStack, RenderTypes.trimmedArmorGlint(), light, OverlayTexture.NO_OVERLAY, null, -1);
+            }
         }
     }
 }

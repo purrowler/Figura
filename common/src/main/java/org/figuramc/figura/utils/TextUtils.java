@@ -220,7 +220,7 @@ public class TextUtils {
                     case "suggest_command": {
                         replacement.addProperty("action", "suggest_command");
                         String command = event.get("value").getAsString();
-                        replacement.addProperty("suggest_command", command);
+                        replacement.addProperty("command", command);
                         break;
                     }
                     case "change_page": {

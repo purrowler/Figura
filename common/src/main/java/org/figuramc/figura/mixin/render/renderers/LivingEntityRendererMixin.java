@@ -201,12 +201,11 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             Matrix4f diff = new Matrix4f(lastPs).invert().mul(poseStack2.last().pose());
             FiguraMat4 poseMatrix = new FiguraMat4().set(diff);
 
-            FiguraMod.popPushProfiler("render");
-
-            figura$transformParts(avatar, model);
-
             FiguraMod.popPushProfiler("renderEvent");
             avatar.renderEvent(tickDelta, poseMatrix);
+
+            FiguraMod.popPushProfiler("render");
+            figura$transformParts(avatar, model);
 
             var localRenderer = avatar.renderer;
             if (localRenderer != null) {

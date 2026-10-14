@@ -93,6 +93,7 @@ public enum FiguraRenderTypes {
         public static final RenderType SOLID = new RenderType(
                 "figura_solid",
                 RenderSetup.builder(FiguraRenderPipelines.FIGURA_SOLID)
+                        .setOitPipelines(FiguraRenderPipelines.OIT_FIGURA_SOLID)
                         .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
                         .setOutline(RenderSetup.OutlineProperty.NONE)
                         .createRenderSetup()
@@ -129,7 +130,7 @@ public enum FiguraRenderTypes {
                 texture -> new RenderType(
                         "figura_blurry",
                         RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT)
-                                
+                                .setOitPipelines(RenderPipelines.OIT_ENTITY)
                                 .affectsCrumbling()
                                 .sortOnUpload()
                                 .useLightmap()
@@ -151,6 +152,7 @@ public enum FiguraRenderTypes {
                 RenderSetup.builder(RenderPipelines.GLINT)
                         .withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM)
                         .setTextureTransform(TextureTransform.ENTITY_GLINT_TEXTURING)
+                        .setOitPipelines(FiguraRenderPipelines.OIT_GLINT)
                         .createRenderSetup()
         );
 
@@ -159,6 +161,7 @@ public enum FiguraRenderTypes {
                 RenderSetup.builder(RenderPipelines.GLINT)
                         .withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM)
                         .setTextureTransform(TextureTransform.GLINT_TEXTURING)
+                        .setOitPipelines(FiguraRenderPipelines.OIT_GLINT)
                         .createRenderSetup()
         );
 
@@ -166,18 +169,20 @@ public enum FiguraRenderTypes {
                 texture -> new RenderType(
                         "figura_textured_glint_direct",
                         RenderSetup.builder(RenderPipelines.GLINT)
-                                
                                 .withTexture("Sampler0", texture)
                                 .setTextureTransform(TextureTransform.ENTITY_GLINT_TEXTURING)
+                                .setOitPipelines(FiguraRenderPipelines.OIT_GLINT)
                                 .createRenderSetup()
                 )
         );
     }
 
     public static class FiguraRenderPipelines extends RenderPipelines {
-        protected static RenderPipeline.Snippet FIGURA_SOLID_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader(new FiguraIdentifier("core/solid")).withFragmentShader(new FiguraIdentifier("core/solid")).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(DepthStencilState.DEFAULT).withCull(false).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_NORMAL).withPrimitiveTopology(com.mojang.renderpearl.api.pipeline.PrimitiveTopology.QUADS).buildSnippet();
+        private static final RenderPipeline.Snippet FIGURA_SOLID_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader(new FiguraIdentifier("core/solid")).withFragmentShader(new FiguraIdentifier("core/solid")).withDepthStencilState(DepthStencilState.DEFAULT).withCull(false).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_NORMAL).withPrimitiveTopology(PrimitiveTopology.QUADS).buildSnippet();
 
-        public static RenderPipeline FIGURA_SOLID = register(RenderPipeline.builder(FIGURA_SOLID_SNIPPET).withLocation(new FiguraIdentifier("pipeline/solid")).build());
+        public static final RenderPipeline FIGURA_SOLID = register(RenderPipeline.builder(FIGURA_SOLID_SNIPPET).withLocation(new FiguraIdentifier("pipeline/solid")).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).build());
+
+        public static final OitPipelineSet OIT_FIGURA_SOLID = OitPipelineSet.builder("figura_solid", RenderPipeline.builder(FIGURA_SOLID_SNIPPET)).build();
 
         private static final RenderPipeline.Snippet CUTOUT_EMISSIVE_SOLID_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET)
                 .withVertexShader("core/rendertype_beacon_beam")
@@ -195,5 +200,19 @@ public enum FiguraRenderTypes {
                 .build());
 
         public static final OitPipelineSet OIT_CUTOUT_EMISSIVE_SOLID = OitPipelineSet.builder("figura_cutout_emissive_solid", RenderPipeline.builder(CUTOUT_EMISSIVE_SOLID_SNIPPET)).build();
+
+        // joinked vanilla GLINT pipeline
+        public static final OitPipelineSet OIT_GLINT = OitPipelineSet.builder("figura_glint", RenderPipeline.builder(GLOBALS_SNIPPET)
+                .withBindGroupLayout(BindGroupLayouts.PROJECTION)
+                .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
+                .withBindGroupLayout(BindGroupLayouts.FOG)
+                .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
+                .withVertexShader("core/glint")
+                .withFragmentShader(new FiguraIdentifier("core/glint_oit"))
+                .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX)
+                .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                .withCull(false)
+                .withShaderDefine("OIT_ADDITIVE")
+        ).build();
     }
 }

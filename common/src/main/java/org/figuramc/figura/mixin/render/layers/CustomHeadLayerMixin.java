@@ -113,9 +113,9 @@ public abstract class CustomHeadLayerMixin<S extends LivingEntityRenderState, M 
             stack.scale(s, s, s);
             ItemTransform transform = ((FiguraItemStackRenderStateExtension) itemStackState).figura$getItemTransform();
 
-            boolean shouldSubmitVanilla = avatar.itemRenderEvent(ItemStackAPI.verify(((FiguraItemStackRenderStateExtension)itemStackState).figura$getItemStack()), ((FiguraItemStackRenderStateExtension)itemStackState).figura$getDisplayContext().name(), FiguraVec3.fromVec3f(transform.translation()), FiguraVec3.of(transform.rotation().z(), transform.rotation().y(), transform.rotation().x()), FiguraVec3.fromVec3f(transform.scale()), ((FiguraItemStackRenderStateExtension) itemStackState).figura$isLeftHanded(), stack, submitNodeCollector, entityState.lightCoords, OverlayTexture.NO_OVERLAY);
+            boolean shouldSubmitVanilla = !avatar.itemRenderEvent(ItemStackAPI.verify(((FiguraItemStackRenderStateExtension)itemStackState).figura$getItemStack()), ((FiguraItemStackRenderStateExtension)itemStackState).figura$getDisplayContext().name(), FiguraVec3.fromVec3f(transform.translation()), FiguraVec3.of(transform.rotation().z(), transform.rotation().y(), transform.rotation().x()), FiguraVec3.fromVec3f(transform.scale()), ((FiguraItemStackRenderStateExtension) itemStackState).figura$isLeftHanded(), stack, submitNodeCollector, entityState.lightCoords, OverlayTexture.NO_OVERLAY);
             if (shouldSubmitVanilla)
-                entityState.headItem.submit(poseStack, submitNodeCollector, i, OverlayTexture.NO_OVERLAY, entityState.outlineColor);
+                entityState.headItem.submit(stack, submitNodeCollector, i, OverlayTexture.NO_OVERLAY, entityState.outlineColor);
         })) {
             ci.cancel();
         }

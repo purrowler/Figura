@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.effects.SpearAnimations;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SwingAnimationType;
 import net.minecraft.world.level.block.AbstractSkullBlock;
 import org.figuramc.figura.avatar.Avatar;
 import org.figuramc.figura.avatar.AvatarManager;
@@ -63,7 +65,7 @@ public abstract class ItemInHandLayerMixin<S extends ArmedEntityRenderState, M e
             var queue = av.renderer.pivotCustomizations.get(pivotType);
             if (queue != null && !queue.isEmpty()) {
                 av.renderer.deferredItems.add(new org.figuramc.figura.model.rendering.FiguraRenderer.DeferredItemData(
-                        itemStackRenderState, submitNodeCollector, light, state.outlineColor, pivotType
+                        itemStackRenderState, submitNodeCollector, light, state.outlineColor, pivotType, stack -> figura$animateItem(state, humanoidArm, itemStack, stack)
                 ));
                 ci.cancel();
                 return;
@@ -101,6 +103,16 @@ public abstract class ItemInHandLayerMixin<S extends ArmedEntityRenderState, M e
         })) {
             ci.cancel();
         }
+    }
+
+    @Unique
+    private void figura$animateItem(S state, HumanoidArm arm, ItemStack item, PoseStack stack) {
+        if (state.currentSwing != null && state.currentSwing.hand().asArm(state.mainArm) == arm && state.currentSwing.animation().type() == SwingAnimationType.STAB)
+            SpearAnimations.thirdPersonAttackItem(state, stack);
+
+        float ticksUsingItem = state.ticksUsingItem(arm);
+        if (ticksUsingItem != 0f)
+            (arm == HumanoidArm.RIGHT ? state.rightArmPose : state.leftArmPose).animateUseItem(state, stack, ticksUsingItem, arm, item);
     }
 
     @WrapOperation(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/item/ItemStackRenderState;submit(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;III)V"))

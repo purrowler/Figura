@@ -28,11 +28,14 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
 
 /**
  * Mainly exists as an abstract superclass for VAO-based and
@@ -90,8 +93,9 @@ public abstract class FiguraRenderer {
     public FiguraModelPart itemToRender;
 
     // using fresh pivot transforms from commonRender() instead of pre-computed ones
-    public record DeferredItemData(ItemStackRenderState renderState, SubmitNodeCollector submitNodeCollector, int light, int outlineColor, ParentType pivotType) {}
+    public record DeferredItemData(ItemStackRenderState renderState, SubmitNodeCollector submitNodeCollector, int light, int outlineColor, ParentType pivotType, Consumer<PoseStack> itemAnimation) {}
     public final List<DeferredItemData> deferredItems = new ArrayList<>();
+    public final Set<ParentType> overriddenPivots = EnumSet.noneOf(ParentType.class);
 
     public FiguraRenderer(Avatar avatar) {
         this.avatar = avatar;

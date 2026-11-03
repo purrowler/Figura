@@ -223,6 +223,8 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
                         final float s = 16f;
                         stack.scale(s, s, s);
                         stack.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90f));
+                        if (!localRenderer.overriddenPivots.contains(deferredItem.pivotType()))
+                            deferredItem.itemAnimation().accept(stack);
 
                         var ext = (FiguraItemStackRenderStateExtension) deferredItem.renderState();
                         ItemTransform transform = ext.figura$getItemTransform();

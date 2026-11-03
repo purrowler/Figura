@@ -392,7 +392,7 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
                 // render pivot parts
                 if (renderPivotParts && part.parentType.isPivot) {
                     FiguraMod.popPushProfiler("savePivotParts");
-                    savePivotTransform(part.parentType, peek);
+                    savePivotTransform(part, peek);
                 }
 
                 customizationStack.pop();
@@ -519,10 +519,18 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
         v.addVertex(pose, x2, y2, z2).setColor(r, g, b, a).setNormal(pose, nx, ny, nz).setLineWidth(1.0f);
     }
 
-    protected void savePivotTransform(ParentType parentType, PartCustomization customization) {
+    protected void savePivotTransform(FiguraModelPart part, PartCustomization customization) {
         FiguraMat4 currentPosMat = customization.getPositionMatrix();
         FiguraMat3 currentNormalMat = customization.getNormalMatrix();
-        ConcurrentLinkedQueue<Pair<FiguraMat4, FiguraMat3>> queue = pivotCustomizations.computeIfAbsent(parentType, p -> new ConcurrentLinkedQueue<>());
+        ConcurrentLinkedQueue<Pair<FiguraMat4, FiguraMat3>> queue = pivotCustomizations.computeIfAbsent(part.parentType, p -> new ConcurrentLinkedQueue<>());
+        if (queue.isEmpty())
+            overriddenPivots.remove(part.parentType);
+        for (FiguraModelPart p = part; p != null; p = p.parent) {
+            if (p.overrideVanillaRot() || p.overrideVanillaPos()) {
+                overriddenPivots.add(part.parentType);
+                break;
+            }
+        }
         queue.add(new Pair<>(currentPosMat, currentNormalMat)); // These are COPIES, so ok to add
     }
 
@@ -588,7 +596,7 @@ public class ImmediateFiguraRenderer extends FiguraRenderer {
                 pivotOffsetter.setPos(pivot);
                 pivotOffsetter.recalculate();
                 customizationStack.push(pivotOffsetter);
-                savePivotTransform(part.parentType, customizationStack.peek());
+                savePivotTransform(part, customizationStack.peek());
                 customizationStack.pop();
             }
         }
